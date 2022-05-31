@@ -6,7 +6,7 @@ from PyQt5 import uic, QtCore
 import os
 
 #cursor for manipulating database
-db = mysql.connector.connect(host = 'localhost', user = 'root', password = '*P@ssw0rd', database = 'student information system')
+db = mysql.connector.connect(host = 'localhost', user = 'root', password = '*P@ssw0rd', database = 'book_rental')
 mydb = db.cursor()
 
 # to fix gui not displaying properly on different resolutions

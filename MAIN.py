@@ -1,5 +1,3 @@
-#sophiaaaaaaa
-
 import mysql
 import mysql.connector
 import sys
@@ -90,3 +88,5 @@ if __name__ == '__main__':
 # 	FOREIGN KEY (c_id) REFERENCES customer(customer_id) ON DELETE CASCADE ON UPDATE CASCADE,
 # 	FOREIGN KEY (cpy_no) REFERENCES book_copy(copy_number)ON DELETE CASCADE ON UPDATE CASCADE
 # ); 
+
+#REGGIE

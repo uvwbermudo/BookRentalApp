@@ -13,7 +13,6 @@ mydb = db.cursor()
 # to fix gui not displaying properly on different resolutions
 QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True) 
 
-# ABCD TESSSSSSSSSSSSSSSSSSSSSSSSST
 
 class RentBook(QMainWindow):
     def __init__(self):

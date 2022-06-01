@@ -21,7 +21,13 @@ class RentBook(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi(f'{sys.path[0]}/rent_form.ui', self) 
+    
 
+    def autofill_book(self, book_price, book_cpyno, book_title):
+        self.cust_price.setText(str(book_price))
+        self.cust_bookrent_id.setText(str(book_cpyno))
+        self.cust_bookrent_title.setText(str(book_title))
+        
 
 class EditBook(QMainWindow):
     def __init__(self):
@@ -58,7 +64,7 @@ class LoginWindow(QMainWindow):         #Reggie
         self.user_login.pressed.connect(self.get_usertype) #testing only, change function
 
     def get_usertype(self):     #login validation
-        change_usertype('Admin') #test func 
+        change_usertype('Clerk') #test func 
         self.close()
 
     def open_register(self):
@@ -72,28 +78,48 @@ class MainWindow (QMainWindow):
         self.user_type = user_role
         super().__init__()        
         self.addbook_window = AddBook()
-        self.headerlabels = ['ISBN','Genre','Author','Publish Date','Book Title','Action']
+        self.rent_window = RentBook()
+        self.headerlabels = ['ISBN','Genre','Author','Publish Date','Book Title','Rent Price', 'Status','Action']
 
         if self.user_type == 'Admin':
             uic.loadUi(f'{sys.path[0]}/admin.ui', self)
+            self.book_addbutton.pressed.connect(self.open_addbook)
         elif self.user_type == 'Clerk':        
             uic.loadUi(f'{sys.path[0]}/clerk.ui', self)
 
-        self.book_addbutton.pressed.connect(self.open_addbook)
         self.book_refresh.pressed.connect(lambda: self.display_books())
         self.book_searchbutton.pressed.connect(self.search_book)
     
-    def open_addbook(self):                     #! PA IMPLEMENT KO SOPHIA
+    def open_rentbook(self, row, searchfor = None):
+        if searchfor == None:
+            mydb.execute("SELECT isbn, genre, author, publish_date, book_title from book")
+        else:
+            mydb.execute(f"SELECT isbn, genre, author, publish_date, book_title from book WHERE book_title LIKE '%{searchfor}%' OR author LIKE '%{searchfor}%'")
+        rows = mydb.fetchall()
+        rows = rows[row]
+        isbn = rows[0]
+        print('isbn is =-----', isbn)
+        mydb.execute(f"SELECT book.book_title, book.price, book_copy.copy_number FROM book INNER JOIN book_copy ON book.isbn = book_copy.copy_isbn WHERE book_copy.book_status = 'Available' AND book.isbn = {isbn}")
+        rows = mydb.fetchall()
+        print('Row selected is -----', row)
+        print('here are the rows:' ,rows)
+        rows = rows[row]
+        book_price = rows[1]
+        book_cpyno = rows[2]
+        book_title = rows[0]
+        self.rent_window.autofill_book(book_price,book_cpyno,book_title)
+        self.rent_window.show()
+    
+    def open_addbook(self):                                             #! PA IMPLEMENT KO SOPHIA
         self.addbook_window.show()
 
-    def query_books(self):
-        mydb.execute('Select * from ')
     
-    def testrow(self, row, searchfor = None):                         #!TEST FUNCTION ONLY 
+    def testrow(self, row, searchfor = None):                         #!TEST FUNCTION DO NOT DELETE
+        print('Row selected is ---- ', row)
         if searchfor != None:
             mydb.execute(f"SELECT isbn, genre, author, publish_date, book_title from book WHERE book_title LIKE '%{searchfor}%' OR author LIKE '%{searchfor}%'")
         else:
-            mydb.execute("SELECT isbn, genre, author, publish_date, book_title from book")
+            mydb.execute("SELECT isbn, genre, author, publish_date, book_title from book") 
         rows = mydb.fetchall()
         isbn = rows[row][0]
         print(isbn)
@@ -101,30 +127,38 @@ class MainWindow (QMainWindow):
         mydb.execute(f"UPDATE book SET isbn = {isbn} WHERE book_title = '{rows[row][4]}'")
         db.commit() 
 
-    def admin_makebuttons(self, row, searchfor = None):                               #passes the row number of selected row on the table displayed to the buttons
-        if searchfor == None:
-            self.editButton = QPushButton('Edit')
-            self.editButton.pressed.connect(lambda: self.testrow(row))              #! sophia dire i connect imong function for editing
-            self.deleteButton = QPushButton('Delete')
-            self.deleteButton.pressed.connect(lambda:self.testrow(row))      #! sophia dire sa pag delete 
-            self.statusButton = QPushButton('Status')
-            self.statusButton.pressed.connect(lambda:self.testrow(row))      
 
-        else:
+    def make_buttons(self, row, searchfor = None):                               #passes the row number of selected row on the table displayed to the buttons
+        if user_role == 'Admin':
             self.editButton = QPushButton('Edit')
-            self.editButton.pressed.connect(lambda: self.testrow(row,searchfor))              #! sophia 
-            self.deleteButton = QPushButton('Delete')
-            self.deleteButton.pressed.connect(lambda:self.testrow(row,searchfor))      #! sophia 
-            self.statusButton = QPushButton('Status')
-            self.statusButton.pressed.connect(lambda:self.testrow(row,searchfor))  #searchfor = keyword searched
+            self.deleteButton = QPushButton('Delete') 
+            if searchfor == None: 
+                self.editButton.pressed.connect(lambda: self.testrow(row))              #! sophia dire i connect imong function for editing 
+                self.deleteButton.pressed.connect(lambda:self.testrow(row))      #! sophia dire sa pag delete 
 
-        self.actionLayout = QHBoxLayout()
-        self.actionLayout.addWidget(self.deleteButton,5)
-        self.actionLayout.addWidget(self.editButton,5)
-        self.actionLayout.addWidget(self.statusButton,5)
-        self.actionWidget = QWidget()
-        self.actionWidget.setLayout(self.actionLayout)
-        return self.actionWidget
+            else:
+                self.editButton.pressed.connect(lambda: self.testrow(row,searchfor))              #! sophia 
+                self.deleteButton.pressed.connect(lambda:self.testrow(row,searchfor))      #! sophia 
+
+            self.actionLayout = QHBoxLayout()
+            self.actionLayout.addWidget(self.deleteButton,5) 
+            self.actionLayout.addWidget(self.editButton,5) 
+            self.actionWidget = QWidget()
+            self.actionWidget.setLayout(self.actionLayout)
+            return self.actionWidget
+        
+        elif user_role == 'Clerk':
+            self.rentButton = QPushButton('Rent Out')
+            if searchfor == None:
+                self.rentButton.pressed.connect(lambda: self.open_rentbook(row))                        #! urel
+            else:
+                self.rentButton.pressed.connect(lambda: self.open_rentbook(row, searchfor))            
+
+            self.actionLayout = QHBoxLayout()
+            self.actionLayout.addWidget(self.rentButton,5) 
+            self.actionWidget = QWidget()
+            self.actionWidget.setLayout(self.actionLayout)
+            return self.actionWidget
 
 
     def display_books(self, search = False, searchfor = None):          #SEARCH == TRUE - MEANING DISPLAYING FOR A SEARCH, SEARCHFOR = SEARCHED KEYWORD
@@ -133,9 +167,10 @@ class MainWindow (QMainWindow):
         vheader = self.book_table.verticalHeader()
         vheader.setSectionResizeMode(QHeaderView.Fixed)        
         vheader.setDefaultSectionSize(40)
+        availablility = 'Available: 0 \n Rented: 10'            #urel implement this asa  function
+        numColumn = 7
 
         if search == True and searchfor != None:                        #if displaying a search
-            numColumn = 5
             mydb.execute(f"SELECT COUNT(*) FROM book WHERE book_title LIKE '%{searchfor}%' OR author LIKE '%{searchfor}%'")
             numRows = mydb.fetchone()
             print(numRows)
@@ -144,20 +179,22 @@ class MainWindow (QMainWindow):
             self.book_table.setRowCount(numRows)
             self.book_table.setHorizontalHeaderLabels(self.headerlabels)
             
-            mydb.execute(f"SELECT isbn, genre, author, publish_date, book_title from book WHERE book_title LIKE '%{searchfor}%' OR author LIKE '%{searchfor}%'")
+            mydb.execute(f"SELECT isbn, genre, author, publish_date, book_title, price from book WHERE book_title LIKE '%{searchfor}%' OR author LIKE '%{searchfor}%'")
             rows = mydb.fetchall()
             print(rows)
-    
+            
             for i in range(numRows):
                 for j in range(numColumn):
+                        if j == 6:
+                            self.book_table.setItem(i, j, QTableWidgetItem(str(availablility)))
+                            continue
                         self.book_table.setItem(i, j, QTableWidgetItem(str(rows[i][j])))
                     
-                actionWidget = self.admin_makebuttons(i,searchfor)            #REFER TO makebuttons function for details
-                self.book_table.setCellWidget(i, 5, actionWidget)
+                actionWidget = self.make_buttons(i,searchfor)            #REFER TO makebuttons function for details    
+                self.book_table.setCellWidget(i, 7, actionWidget)
 
         
         elif search == False and searchfor == None:     #default display
-            numColumn = 5
             mydb.execute("SELECT COUNT(*) FROM book")
             numRows = mydb.fetchone()
             numRows = numRows[0]
@@ -165,27 +202,23 @@ class MainWindow (QMainWindow):
             self.book_table.setRowCount(numRows)
             self.book_table.setHorizontalHeaderLabels(self.headerlabels)
             
-            mydb.execute("SELECT isbn, genre, author, publish_date, book_title from book")
+            mydb.execute("SELECT isbn, genre, author, publish_date, book_title, price from book")
             rows = mydb.fetchall()
             print(rows)
     
             for i in range(numRows):
                 for j in range(numColumn):
+                        if j == 6:
+                            self.book_table.setItem(i, j, QTableWidgetItem(str(availablility)))
+                            continue
                         self.book_table.setItem(i, j, QTableWidgetItem(str(rows[i][j])))
                     
-                actionWidget = self.admin_makebuttons(i)            #REFER TO makebuttons function for details
-                self.book_table.setCellWidget(i, 5, actionWidget)
+                actionWidget = self.make_buttons(i)            #REFER TO makebuttons function for details
+                self.book_table.setCellWidget(i, 7, actionWidget)
         
     def search_book(self):
         search_this = self.book_searchbar.text()
         self.display_books(True, search_this)
-
-            
-
-
-        
-
-
 
 
 if __name__ == '__main__':

@@ -89,7 +89,7 @@ class MainWindow (QMainWindow):
     def query_books(self):
         mydb.execute('Select * from ')
     
-    def testrow(self, row, searchfor = None):                         #TEST FUNCTION ONLY 
+    def testrow(self, row, searchfor = None):                         #!TEST FUNCTION ONLY 
         if searchfor != None:
             mydb.execute(f"SELECT isbn, genre, author, publish_date, book_title from book WHERE book_title LIKE '%{searchfor}%' OR author LIKE '%{searchfor}%'")
         else:
@@ -105,18 +105,23 @@ class MainWindow (QMainWindow):
         if searchfor == None:
             self.editButton = QPushButton('Edit')
             self.editButton.pressed.connect(lambda: self.testrow(row))              #! sophia dire i connect imong function for editing
-            self.deleteStudentButton = QPushButton('Delete')
-            self.deleteStudentButton.pressed.connect(lambda:self.testrow(row))      #! sophia dire sa pag delete hehe
-        
+            self.deleteButton = QPushButton('Delete')
+            self.deleteButton.pressed.connect(lambda:self.testrow(row))      #! sophia dire sa pag delete 
+            self.statusButton = QPushButton('Status')
+            self.statusButton.pressed.connect(lambda:self.testrow(row))      
+
         else:
             self.editButton = QPushButton('Edit')
             self.editButton.pressed.connect(lambda: self.testrow(row,searchfor))              #! sophia 
-            self.deleteStudentButton = QPushButton('Delete')
-            self.deleteStudentButton.pressed.connect(lambda:self.testrow(row,searchfor))      #! sophia 
+            self.deleteButton = QPushButton('Delete')
+            self.deleteButton.pressed.connect(lambda:self.testrow(row,searchfor))      #! sophia 
+            self.statusButton = QPushButton('Status')
+            self.statusButton.pressed.connect(lambda:self.testrow(row,searchfor))  #searchfor = keyword searched
 
         self.actionLayout = QHBoxLayout()
-        self.actionLayout.addWidget(self.deleteStudentButton,5)
+        self.actionLayout.addWidget(self.deleteButton,5)
         self.actionLayout.addWidget(self.editButton,5)
+        self.actionLayout.addWidget(self.statusButton,5)
         self.actionWidget = QWidget()
         self.actionWidget.setLayout(self.actionLayout)
         return self.actionWidget

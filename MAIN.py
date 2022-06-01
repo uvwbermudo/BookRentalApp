@@ -13,21 +13,18 @@ mydb = db.cursor()
 # to fix gui not displaying properly on different resolutions
 QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True) 
 
-
-
-
+# ABCD TESSSSSSSSSSSSSSSSSSSSSSSSST
 
 class RentBook(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi(f'{sys.path[0]}/rent_form.ui', self) 
-    
 
     def autofill_book(self, book_price, book_cpyno, book_title):
         self.cust_price.setText(str(book_price))
         self.cust_bookrent_id.setText(str(book_cpyno))
         self.cust_bookrent_title.setText(str(book_title))
-        
+    
 
 class EditBook(QMainWindow):
     def __init__(self):
@@ -134,31 +131,31 @@ class MainWindow (QMainWindow):
             self.deleteButton = QPushButton('Delete') 
             if searchfor == None: 
                 self.editButton.pressed.connect(lambda: self.testrow(row))              #! sophia dire i connect imong function for editing 
-                self.deleteButton.pressed.connect(lambda:self.testrow(row))      #! sophia dire sa pag delete 
+                self.deleteButton.pressed.connect(lambda:self.testrow(row))             #! sophia dire sa pag delete 
 
             else:
-                self.editButton.pressed.connect(lambda: self.testrow(row,searchfor))              #! sophia 
-                self.deleteButton.pressed.connect(lambda:self.testrow(row,searchfor))      #! sophia 
+                self.editButton.pressed.connect(lambda: self.testrow(row,searchfor))            #! sophia 
+                self.deleteButton.pressed.connect(lambda:self.testrow(row,searchfor))           #! sophia 
 
-            self.actionLayout = QHBoxLayout()
+            self.actionLayout = QHBoxLayout() 
             self.actionLayout.addWidget(self.deleteButton,5) 
             self.actionLayout.addWidget(self.editButton,5) 
-            self.actionWidget = QWidget()
-            self.actionWidget.setLayout(self.actionLayout)
-            return self.actionWidget
+            self.actionWidget = QWidget() 
+            self.actionWidget.setLayout(self.actionLayout) 
+            return self.actionWidget 
         
-        elif user_role == 'Clerk':
-            self.rentButton = QPushButton('Rent Out')
-            if searchfor == None:
-                self.rentButton.pressed.connect(lambda: self.open_rentbook(row))                        #! urel
-            else:
+        elif user_role == 'Clerk': 
+            self.rentButton = QPushButton('Rent Out') 
+            if searchfor == None: 
+                self.rentButton.pressed.connect(lambda: self.open_rentbook(row))                        #! urel 
+            else: 
                 self.rentButton.pressed.connect(lambda: self.open_rentbook(row, searchfor))            
 
-            self.actionLayout = QHBoxLayout()
+            self.actionLayout = QHBoxLayout() 
             self.actionLayout.addWidget(self.rentButton,5) 
-            self.actionWidget = QWidget()
-            self.actionWidget.setLayout(self.actionLayout)
-            return self.actionWidget
+            self.actionWidget = QWidget() 
+            self.actionWidget.setLayout(self.actionLayout) 
+            return self.actionWidget 
 
 
     def display_books(self, search = False, searchfor = None):          #SEARCH == TRUE - MEANING DISPLAYING FOR A SEARCH, SEARCHFOR = SEARCHED KEYWORD

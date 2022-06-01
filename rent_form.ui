@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -317,10 +320,31 @@
       <x>21</x>
       <y>291</y>
       <width>351</width>
-      <height>145</height>
+      <height>164</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_3">
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_13">
+       <property name="text">
+        <string>Due Date</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLineEdit" name="cust_price">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QLineEdit" name="cust_bookrent_title">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
      <item row="0" column="0">
       <widget class="QLabel" name="label_14">
        <property name="font">
@@ -335,72 +359,67 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_12">
-       <property name="text">
-        <string>Start Date</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QDateTimeEdit" name="cust_start"/>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_13">
-       <property name="text">
-        <string>Due Date</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label_15">
-       <property name="text">
-        <string>Price</string>
-       </property>
-      </widget>
-     </item>
      <item row="3" column="1">
-      <widget class="QLineEdit" name="cust_price">
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
+      <widget class="QDateTimeEdit" name="cust_due"/>
      </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="label_16">
-       <property name="text">
-        <string>Book Copy Number</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QLineEdit" name="cust_bookrent_id">
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="0">
+     <item row="6" column="0">
       <widget class="QLabel" name="label_17">
        <property name="text">
         <string>Book Title</string>
        </property>
       </widget>
      </item>
-     <item row="5" column="1">
-      <widget class="QLineEdit" name="cust_bookrent_title">
-       <property name="readOnly">
-        <bool>true</bool>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_12">
+       <property name="text">
+        <string>Start Date</string>
        </property>
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QDateTimeEdit" name="cust_due"/>
+      <widget class="QDateTimeEdit" name="cust_start"/>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_15">
+       <property name="text">
+        <string>Price</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="cust_bookrent_id">
+       <property name="readOnly">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_16">
+       <property name="text">
+        <string>Book Copy Number</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>cust_id</tabstop>
+  <tabstop>cust_name</tabstop>
+  <tabstop>cust_phone</tabstop>
+  <tabstop>cust_street</tabstop>
+  <tabstop>cust_barangay</tabstop>
+  <tabstop>cust_house</tabstop>
+  <tabstop>cust_bookrent_id</tabstop>
+  <tabstop>cust_start</tabstop>
+  <tabstop>cust_due</tabstop>
+  <tabstop>cust_price</tabstop>
+  <tabstop>cust_bookrent_title</tabstop>
+  <tabstop>cust_complete</tabstop>
+  <tabstop>id_select</tabstop>
+  <tabstop>cust_idpic</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

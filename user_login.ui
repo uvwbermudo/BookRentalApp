@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -25,6 +28,9 @@
   <property name="windowTitle">
    <string>ABC Log-in</string>
   </property>
+  <property name="animated">
+   <bool>true</bool>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <property name="minimumSize">
     <size>
@@ -38,7 +44,7 @@
      <height>266</height>
     </size>
    </property>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>102</x>
@@ -81,7 +87,7 @@
       </widget>
      </item>
      <item row="3" column="0">
-      <widget class="QPushButton" name="pushButton_2">
+      <widget class="QPushButton" name="user_login">
        <property name="font">
         <font>
          <pointsize>14</pointsize>
@@ -93,7 +99,7 @@
       </widget>
      </item>
      <item row="4" column="0">
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="user_reg">
        <property name="text">
         <string>Register</string>
        </property>

@@ -1,42 +1,113 @@
-import mysql
-import mysql.connector
-import sys
+from ast import While
+import mysql 
+import mysql.connector 
+import sys 
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QTableWidgetItem, QHeaderView, QErrorMessage, QPushButton, QHBoxLayout, QMessageBox
-from PyQt5 import uic, QtCore
-import os
+from PyQt5 import uic, QtCore   
+import os 
 
 #cursor for manipulating database
-db = mysql.connector.connect(host = 'localhost', user = 'root', password = '*P@ssw0rd', database = 'book_rental')
-mydb = db.cursor()
+db = mysql.connector.connect(host = 'localhost', user = 'root', password = '*P@ssw0rd', database = 'book_rental') 
+mydb = db.cursor() 
 
 # to fix gui not displaying properly on different resolutions
 QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True) 
 
 
-class AddBook(QMainWindow):
-    def __init__ (self):
-        super().__init__()
-        uic.loadUi(f'{sys.path[0]}/admin_addbook.ui', self)
-        self.book_isbn.editingFinished.connect(self.check)
 
-    def check(self):
-        self.book_author.setText('Test')
-        self.book_genre.setText('Test')
-        self.book_title.setText('Test')
+
+
+class RentBook(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi(f'{sys.path[0]}/rent_form.ui', self) 
+
+
+class EditBook(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi(f'{sys.path[0]}/admin_editbook.ui', self) 
+
+
+class AddBook(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi(f'{sys.path[0]}/admin_addbook.ui', self) 
+
+
+class RegisterWindow(QMainWindow):                  #Reggie
+
+    def __init__(self):
+        super().__init__()
+        uic.loadUi(f'{sys.path[0]}/user_register.ui', self) 
+        
+
+
+user_role = 'None'
+def change_usertype(user_type):
+    global user_role
+    user_role = user_type
+
+class LoginWindow(QMainWindow):         #Reggie
+
+    def __init__(self):
+        super().__init__()
+        self.register_window = RegisterWindow()
+        uic.loadUi(f'{sys.path[0]}/user_login.ui', self)
+        self.user_reg.pressed.connect(self.open_register)
+        self.user_login.pressed.connect(self.get_usertype) #testing only, change function
+
+    def get_usertype(self):     #login validation
+        change_usertype('Admin') #test func 
+        self.close()
+
+    def open_register(self):
+        self.register_window.show()
+        
+
+
+class MainWindow (QMainWindow):
+    
+    def __init__(self):
+        self.user_type = user_role
+        super().__init__()        
+        self.addbook_window = AddBook()
+
+        if self.user_type == 'Admin':
+            uic.loadUi(f'{sys.path[0]}/admin.ui', self)
+        elif self.user_type == 'Clerk':        
+            uic.loadUi(f'{sys.path[0]}/clerk.ui', self)
+
+        self.book_addbutton.pressed.connect(self.open_addbook)
+
+    def open_addbook(self):
+        self.addbook_window.show()
+            
+
+    
+        
+
 
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv) 
-
-    mygui = AddBook()
-    mygui.show()
-
+    login = LoginWindow()
+    login.show()
     try:
         sys.exit(app.exec_())
     except (SystemExit):
         print("Closing window...")
+    
+    main = MainWindow()
+    main.show()
+    try:
+        sys.exit(app.exec_())
+    except (SystemExit):
+        print("Closing window...")
+    
 
+    
 
 
 
@@ -88,6 +159,7 @@ if __name__ == '__main__':
 # 	FOREIGN KEY (c_id) REFERENCES customer(customer_id) ON DELETE CASCADE ON UPDATE CASCADE,
 # 	FOREIGN KEY (cpy_no) REFERENCES book_copy(copy_number)ON DELETE CASCADE ON UPDATE CASCADE
 # ); 
+
 
 #REGGIE
 #sophiaaaaa

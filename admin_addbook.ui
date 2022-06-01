@@ -75,10 +75,10 @@
    <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
-      <x>21</x>
-      <y>63</y>
+      <x>20</x>
+      <y>50</y>
       <width>391</width>
-      <height>126</height>
+      <height>152</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout">
@@ -89,48 +89,58 @@
        </property>
       </widget>
      </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="book_isbn"/>
+     </item>
      <item row="1" column="0">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>Copy Number</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="book_copynum"/>
+     </item>
+     <item row="2" column="0">
       <widget class="QLabel" name="label_6">
        <property name="text">
         <string>Book Title</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="2" column="1">
       <widget class="QLineEdit" name="book_title"/>
      </item>
-     <item row="2" column="0">
+     <item row="3" column="0">
       <widget class="QLabel" name="label_4">
        <property name="text">
         <string>Author</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
+     <item row="3" column="1">
       <widget class="QLineEdit" name="book_author"/>
      </item>
-     <item row="3" column="0">
+     <item row="4" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Genre</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
+     <item row="4" column="1">
       <widget class="QLineEdit" name="book_genre"/>
      </item>
-     <item row="4" column="0">
+     <item row="5" column="0">
       <widget class="QLabel" name="label_5">
        <property name="text">
         <string>Publish Date</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="1">
+     <item row="5" column="1">
       <widget class="QDateEdit" name="book_date"/>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="book_isbn"/>
      </item>
     </layout>
    </widget>

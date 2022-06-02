@@ -272,6 +272,7 @@ class LoginWindow(QMainWindow):         #Reggie
         mydb.execute(f"SELECT role FROM app_user WHERE username='{self.username}'")
         role=mydb.fetchone()
         change_usertype(*role) 
+        make_window(self)
 
         self.close()
         
@@ -289,6 +290,9 @@ class MainWindow (QMainWindow):
         self.rent_window = RentBook()
         self.headerlabels = ['ISBN','Genre','Author','Publish Date','Book Title','Rent Price', 'Status','Action']
         self.headerlabels2 = ['Customer ID', 'Book Copy', 'Customer Name','Phone Number','Book Title', 'Rent Price','Start Date','Due Date','Penalizations','Actions']
+        self.error_dialog=QErrorMessage()
+        self.error_dialog.setWindowTitle("Error")
+
 
         if self.user_type == 'Admin':
             uic.loadUi(f'{sys.path[0]}/admin.ui', self)
@@ -296,6 +300,7 @@ class MainWindow (QMainWindow):
             self.hist_clear.pressed.connect(self.delete_history)
         elif self.user_type == 'Clerk': 
             uic.loadUi(f'{sys.path[0]}/clerk.ui', self) 
+
 
         self.book_refresh.pressed.connect(lambda: self.display_books())
         self.book_searchbutton.pressed.connect(self.search_book)
@@ -623,6 +628,7 @@ class MainWindow (QMainWindow):
         self.display_books(True, search_this)
 
 
+
 def make_window(loginwindow):
     mainWindow = MainWindow()
     mainWindow.showMaximized()
@@ -636,7 +642,6 @@ if __name__ == '__main__':
 
     login = LoginWindow()
     login.show()
-    login.user_login.pressed.connect(lambda: make_window(login))
 
     try:
         sys.exit(app.exec_())

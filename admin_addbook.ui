@@ -75,10 +75,10 @@
    <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>21</x>
       <y>50</y>
-      <width>391</width>
-      <height>152</height>
+      <width>381</width>
+      <height>157</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout">
@@ -90,7 +90,30 @@
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QLineEdit" name="book_isbn"/>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QLineEdit" name="book_isbn"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="book_isbnsearch">
+         <property name="minimumSize">
+          <size>
+           <width>41</width>
+           <height>23</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>41</width>
+           <height>23</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Search</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="label_7">

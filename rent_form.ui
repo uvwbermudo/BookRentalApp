@@ -180,7 +180,11 @@
       </widget>
      </item>
      <item row="3" column="1">
-      <widget class="QLineEdit" name="cust_house"/>
+      <widget class="QLineEdit" name="cust_house">
+       <property name="inputMethodHints">
+        <set>Qt::ImhPreferNumbers</set>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>
@@ -388,6 +392,9 @@
      </item>
      <item row="1" column="1">
       <widget class="QLineEdit" name="cust_bookrent_id">
+       <property name="inputMethodHints">
+        <set>Qt::ImhPreferNumbers</set>
+       </property>
        <property name="readOnly">
         <bool>false</bool>
        </property>

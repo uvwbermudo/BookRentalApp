@@ -152,7 +152,56 @@ class EditBook(QMainWindow):
 class AddBook(QMainWindow):
     def __init__(self):
         super().__init__()
-        uic.loadUi(f'{sys.path[0]}/admin_addbook.ui', self) 
+        uic.loadUi(f'{sys.path[0]}/admin_addbook.ui', self)
+
+        self.done_add.pressed.connect(self.inputBook)
+        self.book_isbnsearch.pressed.connect(self.searchisbn)
+
+    def inputBook(self):
+        book = []
+        book.append(self.book_isbn.text())
+        book.append(self.book_genre.text())
+        book.append(self.book_author.text())
+        book.append(self.book_date.text()[6:]+'-'+self.book_date.text()[3:5]+'-'+self.book_date.text()[0:2])
+        book.append(self.book_title.text())
+        book.append(self.book_price.text())
+        
+        if self.searchisbn:
+            mydb.execute(f"INSERT INTO book_copy VALUES({self.book_copynum.text()}, 'Available', {self.book_isbn.text()})")
+            db.commit()
+        else:
+            sqlInsert = "INSERT INTO book VALUES (%s, %s, %s, %s, %s, %s)"
+            mydb.execute(sqlInsert, book)
+            db.commit()
+
+            mydb.execute(f"INSERT INTO book_copy VALUES({self.book_copynum.text()}, 'Available', {self.book_isbn.text()})")
+            db.commit()
+        self.book_isbn.clear()
+        self.book_copynum.clear()
+        self.book_title.clear()
+        self.book_author.clear()
+        self.book_genre.clear()
+        self.book_date.setDateTime(QtCore.QDateTime(2000,1,1,1,0,0))
+        self.book_price.clear()
+        self.close()
+        
+    def searchisbn(self):
+        mydb.execute(f"SELECT * FROM book WHERE isbn = {self.book_isbn.text()}")
+        rows = mydb.fetchall()
+        if rows:
+            self.autofill(rows)
+            return 1
+        else:
+            print("NO ISBN FOUND")
+            return 0
+
+    def autofill(self, rows):
+        self.book_title.setText(rows[0][4])
+        self.book_author.setText(rows[0][2])
+        self.book_genre.setText(rows[0][1])
+        self.book_date.setDateTime(QtCore.QDateTime(rows[0][3]))
+        self.book_price.setText(str(rows[0][5]))
+
 
 
 class RegisterWindow(QMainWindow):                  #Reggie

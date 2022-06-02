@@ -1,13 +1,13 @@
 from ast import While
 import mysql 
-import mysql.connector 
+import mysql.connector
 import sys 
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QTableWidgetItem, QHeaderView, QErrorMessage, QPushButton, QHBoxLayout, QMessageBox
 from PyQt5 import uic, QtCore   
 import os 
 
 #cursor for manipulating database
-db = mysql.connector.connect(host = 'localhost', user = 'root', password = '*P@ssw0rd', database = 'book_rental') 
+db = mysql.connector.connect(host = 'localhost', user = 'root', password = '123abc', database = 'book_rental') 
 mydb = db.cursor() 
 
 # to fix gui not displaying properly on different resolutions
@@ -41,14 +41,40 @@ class RegisterWindow(QMainWindow):                  #Reggie
 
     def __init__(self):
         super().__init__()
-        uic.loadUi(f'{sys.path[0]}/user_register.ui', self) 
-        
+        uic.loadUi(f'{sys.path[0]}/user_register.ui', self)
+        self.pushButton.pressed.connect(self.entry)
+        self.error_dialog=QErrorMessage()
+        self.error_dialog.setWindowTitle("Error")
+
+    def entry(self):
+        self.username = self.lineEdit.text()
+        self.password = self.lineEdit_2.text()
+        self.con_pass = self.lineEdit_3.text()
+        self.role= self.comboBox.currentText()
+        mydb.execute(f"SELECT COUNT(*) FROM app_user WHERE username='{self.username}'")
+        username=mydb.fetchone()
+        if username[0]==1:
+            self.error_dialog.showMessage('User already existed')
+            return
+        if (len(self.password)==0):
+            self.error_dialog.showMessage('Please Input Password')
+            return
+        if self.password != self.con_pass:
+            self.error_dialog.showMessage("Password Incorrect")
+            return
+        print (f"{self.username}, {self.password}, {self.con_pass}, {self.role}")
+        mydb.execute(f"INSERT INTO app_user VALUES ('{self.password}','{self.username}','{self.role}')")
+        db.commit()
+        self.close()
+
+
 
 
 user_role = 'None'
 def change_usertype(user_type):
     global user_role
     user_role = user_type
+
 
 class LoginWindow(QMainWindow):         #Reggie
 
@@ -57,12 +83,29 @@ class LoginWindow(QMainWindow):         #Reggie
         self.register_window = RegisterWindow()
         uic.loadUi(f'{sys.path[0]}/user_login.ui', self)
         self.user_reg.pressed.connect(self.open_register)
-        self.user_login.pressed.connect(self.get_usertype) #testing only, change function
+        self.user_login.pressed.connect(self.get_usertype) 
+        self.error_dialog=QErrorMessage()
+        self.error_dialog.setWindowTitle("Error")
 
     def get_usertype(self):     #login validation
-        change_usertype('Clerk') #test func 
+        self.username=self.lineEdit.text()
+        self.password=self.lineEdit_2.text()
+        mydb.execute(f"SELECT COUNT(*) FROM app_user WHERE username='{self.username}'")
+        username=mydb.fetchone()
+        if username[0]==0:
+            self.error_dialog.showMessage("No User found")             #NO USER
+            return
+        mydb.execute(f"SELECT user_password FROM app_user WHERE username='{self.username}' ")
+        userpass=mydb.fetchone()
+        userpass=userpass[0]
+        if self.password != userpass:
+            self.error_dialog.showMessage("Incorrect Password")         #INCORRECT PASSWORD
+            return
+        mydb.execute(f"SELECT role FROM app_user WHERE username='{self.username}'")
+        role=mydb.fetchone()
+        change_usertype(*role) 
         self.close()
-
+        
     def open_register(self):
         self.register_window.show()
         

@@ -7,19 +7,19 @@
     <x>0</x>
     <y>0</y>
     <width>433</width>
-    <height>265</height>
+    <height>294</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>433</width>
-    <height>265</height>
+    <height>294</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>433</width>
-    <height>16777215</height>
+    <height>294</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -50,8 +50,8 @@
    <widget class="QPushButton" name="done_add">
     <property name="geometry">
      <rect>
-      <x>320</x>
-      <y>210</y>
+      <x>300</x>
+      <y>190</y>
       <width>91</width>
       <height>41</height>
      </rect>
@@ -76,9 +76,9 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>50</y>
-      <width>391</width>
-      <height>152</height>
+      <y>55</y>
+      <width>371</width>
+      <height>131</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout">
@@ -90,7 +90,30 @@
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QLineEdit" name="book_isbn"/>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QLineEdit" name="book_isbn"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="book_isbnsearch">
+         <property name="minimumSize">
+          <size>
+           <width>41</width>
+           <height>23</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>41</width>
+           <height>23</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Search</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="label_7">
@@ -132,15 +155,63 @@
      <item row="4" column="1">
       <widget class="QLineEdit" name="book_genre"/>
      </item>
-     <item row="5" column="0">
+    </layout>
+   </widget>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>190</y>
+      <width>151</width>
+      <height>48</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_8">
+       <property name="text">
+        <string>Rent Price</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="book_price">
+       <property name="minimumSize">
+        <size>
+         <width>81</width>
+         <height>20</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>81</width>
+         <height>20</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
       <widget class="QLabel" name="label_5">
        <property name="text">
         <string>Publish Date</string>
        </property>
       </widget>
      </item>
-     <item row="5" column="1">
-      <widget class="QDateEdit" name="book_date"/>
+     <item row="1" column="1">
+      <widget class="QDateEdit" name="book_date">
+       <property name="minimumSize">
+        <size>
+         <width>81</width>
+         <height>20</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>81</width>
+         <height>20</height>
+        </size>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>

@@ -108,7 +108,11 @@
            </layout>
           </item>
           <item>
-           <widget class="QTableWidget" name="book_table"/>
+           <widget class="QTableWidget" name="book_table">
+            <property name="editTriggers">
+             <set>QAbstractItemView::NoEditTriggers</set>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
@@ -196,7 +200,11 @@
            </layout>
           </item>
           <item>
-           <widget class="QTableWidget" name="cust_table"/>
+           <widget class="QTableWidget" name="cust_table">
+            <property name="editTriggers">
+             <set>QAbstractItemView::NoEditTriggers</set>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
@@ -208,9 +216,45 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QTextEdit" name="textEdit">
-          <property name="readOnly">
-           <bool>true</bool>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QPushButton" name="hist_refresh">
+            <property name="minimumSize">
+             <size>
+              <width>75</width>
+              <height>23</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>75</width>
+              <height>23</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Refresh</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QTableWidget" name="hist_table">
+          <property name="editTriggers">
+           <set>QAbstractItemView::NoEditTriggers</set>
           </property>
          </widget>
         </item>

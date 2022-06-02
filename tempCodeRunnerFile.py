@@ -1,1 +1,1 @@
-
+j == 9 and rows[i][j] == None

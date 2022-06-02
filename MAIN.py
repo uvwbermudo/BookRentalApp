@@ -272,6 +272,7 @@ class LoginWindow(QMainWindow):         #Reggie
         mydb.execute(f"SELECT role FROM app_user WHERE username='{self.username}'")
         role=mydb.fetchone()
         change_usertype(*role) 
+        make_window(self)
 
         self.close()
         
@@ -636,7 +637,6 @@ if __name__ == '__main__':
 
     login = LoginWindow()
     login.show()
-    login.user_login.pressed.connect(lambda: make_window(login))
 
     try:
         sys.exit(app.exec_())

@@ -1,4 +1,5 @@
 from ast import While
+from tkinter import dialog
 from tracemalloc import start
 import mysql 
 import mysql.connector
@@ -9,7 +10,7 @@ import os
 import datetime
 #cursor for manipulating database
 
-db = mysql.connector.connect(host = 'localhost', user = 'root', password = '*P@ssw0rd', database = 'book_rental') 
+db = mysql.connector.connect(host = 'localhost', user = 'root', password = '123abc', database = 'book_rental') 
 mydb = db.cursor(buffered=True) 
 
 # to fix gui not displaying properly on different resolutions
@@ -212,7 +213,9 @@ class RegisterWindow(QMainWindow):                  #Reggie
         uic.loadUi(f'{sys.path[0]}/user_register.ui', self)
         self.pushButton.pressed.connect(self.entry)
         self.error_dialog=QErrorMessage()
-        self.error_dialog.setWindowTitle("Error")
+        self.error_dialog.setWindowTitle("Error") 
+        self.success_dialog=QErrorMessage()
+        self.success_dialog.setWindowTitle("SUCCESS")
 
     def entry(self):
         self.username = self.lineEdit.text()
@@ -222,7 +225,7 @@ class RegisterWindow(QMainWindow):                  #Reggie
         mydb.execute(f"SELECT COUNT(*) FROM app_user WHERE username='{self.username}'")
         username=mydb.fetchone()
         if username[0]==1:
-            self.error_dialog.showMessage('User already existed')
+            self.error_dialog.showMessage('User already exists')
             return
         if (len(self.password)==0):
             self.error_dialog.showMessage('Please Input Password')
@@ -233,6 +236,7 @@ class RegisterWindow(QMainWindow):                  #Reggie
         print (f"{self.username}, {self.password}, {self.con_pass}, {self.role}")
         mydb.execute(f"INSERT INTO app_user VALUES ('{self.password}','{self.username}','{self.role}')")
         db.commit()
+        self.success_dialog.showMessage("Successfully Registered!")
         self.close()
 
 

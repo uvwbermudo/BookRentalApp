@@ -518,12 +518,12 @@ class MainWindow (QMainWindow):
             self.editButton = QPushButton('Edit')
             self.deleteButton = QPushButton('Delete') 
             if searchfor == None: 
-                self.editButton.pressed.connect(lambda: self.testrow(row))              #! sophia dire i connect imong function for editing 
-                self.deleteButton.pressed.connect(lambda:self.testrow(row))             #! sophia dire sa pag delete 
+                self.editButton.pressed.connect(lambda:self.open_editbook(row, searchfor))              #! sophia dire i connect imong function for editing #02/06
+                self.deleteButton.pressed.connect(lambda:self.delete_book(row, searchfor))             #! sophia dire sa pag delete  #03/06
 
             else:
-                self.editButton.pressed.connect(lambda: self.testrow(row,searchfor))            #! sophia 
-                self.deleteButton.pressed.connect(lambda:self.testrow(row,searchfor))           #! sophia 
+                self.editButton.pressed.connect(lambda: self.open_editbook(row, searchfor))            #! sophia 
+                self.deleteButton.pressed.connect(lambda:self.delete_book(row, searchfor))           #! sophia 
 
             self.actionLayout = QHBoxLayout() 
             self.actionLayout.addWidget(self.deleteButton,5) 

@@ -198,13 +198,59 @@ class EditBook(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi(f'{sys.path[0]}/admin_editbook.ui', self) 
+        self.error_dialog=QErrorMessage()
+        self.error_dialog.setWindowTitle("Error")
+        self.done_add.pressed.connect(self.inputBook)
 
+    def getBook(self, row, searchfor):
+        self.getisbn = ''
+        if searchfor == None:
+            mydb.execute(f"SELECT * FROM book LIMIT {row}, 1")
+        else:
+            mydb.execute(f"SELECT * from book WHERE book_title LIKE '%{searchfor}%' OR author LIKE '%{searchfor}%' LIMIT {row}, 1")
+        rows = mydb.fetchone()
+        self.getisbn = rows[0]
+        self.autofill(rows)
+
+    def inputBook(self):
+        book = []
+        book.append(self.book_isbn.text())
+        book.append(self.book_genre.text())
+        book.append(self.book_author.text())
+        book.append(self.book_date.text()[6:]+'-'+self.book_date.text()[3:5]+'-'+self.book_date.text()[0:2])
+        book.append(self.book_title.text())
+        book.append(self.book_price.text())
+        book.append(self.getisbn)
+        
+        try:
+            sqlUpdate = "UPDATE book SET isbn = %s, genre = %s, author = %s, publish_date = %s, book_title = %s, price = %s where isbn = %s"
+            mydb.execute(sqlUpdate,book)
+            db.commit()
+            self.book_isbn.clear()
+            self.book_title.clear()
+            self.book_author.clear()
+            self.book_genre.clear()
+            self.book_date.setDateTime(QtCore.QDateTime(2000,1,1,1,0,0))
+            self.book_price.clear()
+            self.close()
+        except:
+            self.error_dialog.showMessage('ISBN exists. Enter a new one')
+            self.book_isbn.clear()
+
+    def autofill(self, rows):
+        self.book_isbn.setText(str(rows[0]))
+        self.book_title.setText(rows[4])
+        self.book_author.setText(rows[2])
+        self.book_genre.setText(rows[1])
+        self.book_date.setDateTime(QtCore.QDateTime(rows[3]))
+        self.book_price.setText(str(rows[5])) 
 
 class AddBook(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi(f'{sys.path[0]}/admin_addbook.ui', self)
-
+        self.error_dialog=QErrorMessage()
+        self.error_dialog.setWindowTitle("Error")
         self.done_add.pressed.connect(self.inputBook)
         self.book_isbnsearch.pressed.connect(self.searchisbn)
 
@@ -217,7 +263,7 @@ class AddBook(QMainWindow):
         book.append(self.book_title.text())
         book.append(self.book_price.text())
         
-        if self.searchisbn():
+        if self.search():
             mydb.execute(f"INSERT INTO book_copy VALUES({self.book_copynum.text()}, 'Available', {self.book_isbn.text()})")
             db.commit()
         else:
@@ -236,14 +282,21 @@ class AddBook(QMainWindow):
         self.book_price.clear()
         self.close()
         
-    def searchisbn(self):
+    def search(self):
         mydb.execute(f"SELECT * FROM book WHERE isbn = {self.book_isbn.text()}")
         rows = mydb.fetchall()
+        if rows:
+            return rows
+        else:
+            return 0
+        
+    def searchisbn(self):
+        rows = self.search()
         if rows:
             self.autofill(rows)
             return 1
         else:
-            print("NO ISBN FOUND")
+            self.error_dialog.showMessage('No ISBN found.')
             return 0
 
     def autofill(self, rows):
@@ -252,6 +305,7 @@ class AddBook(QMainWindow):
         self.book_genre.setText(rows[0][1])
         self.book_date.setDateTime(QtCore.QDateTime(rows[0][3]))
         self.book_price.setText(str(rows[0][5]))
+
 
 
 
@@ -428,6 +482,22 @@ class MainWindow (QMainWindow):
     def open_addbook(self):                                             #! PA IMPLEMENT KO SOPHIA
         self.addbook_window.show()
 
+    def open_editbook(self, row, searchfor):
+        self.editbook_window.getBook(row, searchfor)
+        self.editbook_window.show()
+
+    def delete_book(self, row, searchfor):
+        if searchfor == None:
+            mydb.execute(f"SELECT * FROM book LIMIT {row}, 1")
+        else:
+            mydb.execute(f"SELECT * from book WHERE book_title LIKE '%{searchfor}%' OR author LIKE '%{searchfor}%' LIMIT {row}, 1")
+        rows = mydb.fetchone()
+        reply = QMessageBox.question(self, 'Confirmation', 'Are you sure you want to delete this book? This action cannot be undone.')
+        if reply == QMessageBox.Yes:
+            mydb.execute(f"DELETE FROM book WHERE isbn = {rows[0]}")
+            db.commit()
+        else:
+            return
     
     def testrow(self, row, searchfor = None):                         #!TEST FUNCTION DO NOT DELETE
         print('Row selected is ---- ', row)

@@ -147,8 +147,28 @@ class RentBook(QMainWindow):
         rows = mydb.fetchone()
         if rows == None:
             self.cust_alrexist = False
+            self.cust_name.setReadOnly(False)
+            self.cust_idpic.setReadOnly(False)
+            self.cust_phone.setReadOnly(False)
+            self.cust_street.setReadOnly(False)
+            self.cust_barangay.setReadOnly(False)
+            self.cust_house.setReadOnly(False)
+            self.cust_name.clear()
+            self.cust_idpic.clear()
+            self.cust_phone.clear()
+            self.cust_street.clear()
+            self.cust_barangay.clear()
+            self.cust_house.clear()
+
             return
+        
         self.cust_alrexist = True
+        self.cust_name.setReadOnly(True)
+        self.cust_idpic.setReadOnly(True)
+        self.cust_phone.setReadOnly(True)
+        self.cust_street.setReadOnly(True)
+        self.cust_barangay.setReadOnly(True)
+        self.cust_house.setReadOnly(True)
         self.cust_name.setText(rows[1])
         self.cust_idpic.setText(rows[2])
         self.cust_phone.setText(rows[3])
@@ -192,6 +212,15 @@ class RentBook(QMainWindow):
             return True
         return False
         
+    def clear_fields(self):
+        self.cust_id.clear()
+        self.cust_name.clear()
+        self.cust_phone.clear()
+        self.cust_idpic.clear()
+        self.cust_street.clear()
+        self.cust_barangay.clear()
+        self.cust_house.clear()
+        self.cust_bookrent_id.clear()
         
 
 class EditBook(QMainWindow):
@@ -404,6 +433,7 @@ class MainWindow (QMainWindow):
         self.user_type = user_role
         super().__init__()        
         self.addbook_window = AddBook()
+        self.editbook_window = EditBook()
         self.rent_window = RentBook()
         self.image_view = ImageView()
         self.headerlabels = ['ISBN','Genre','Author','Publish Date','Book Title','Rent Price', 'Status','Action']
@@ -461,14 +491,7 @@ class MainWindow (QMainWindow):
             return
         book_title = rows[0]
         book_price = rows[1]
-        self.rent_window.cust_id.clear()
-        self.rent_window.cust_name.clear()
-        self.rent_window.cust_phone.clear()
-        self.rent_window.cust_idpic.clear()
-        self.rent_window.cust_street.clear()
-        self.rent_window.cust_barangay.clear()
-        self.rent_window.cust_house.clear()
-        self.rent_window.cust_bookrent_id.clear()
+        self.rent_window.clear_fields()
         self.rent_window.book_price = book_price
         self.rent_window.book_title = book_title
         self.rent_window.cust_alrexist = False

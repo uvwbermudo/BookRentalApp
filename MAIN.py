@@ -1,11 +1,8 @@
-from ast import While
-from tkinter import dialog
-from tracemalloc import start
 import mysql 
 import mysql.connector
 import sys 
-from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QTableWidgetItem, QHeaderView, QErrorMessage, QPushButton, QHBoxLayout, QMessageBox
-from PyQt5 import uic, QtCore, QtGui
+from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QTableWidgetItem, QHeaderView, QErrorMessage, QPushButton, QHBoxLayout, QMessageBox, QFileDialog
+from PyQt5 import uic, QtCore, QtGui, QtWidgets
 import os 
 import datetime
 #cursor for manipulating database
@@ -61,6 +58,23 @@ def convert_to_sql(qtimedate, alt = False):        #convert Time date from QT to
 #1999-07-22 12:00:00 SQL RETURN 
 #'1999-07-24 12:00:00' SQL INSERT 
 
+class ImageView(QMainWindow):
+
+    def __init__(self):
+        super().__init__()
+        uic.loadUi(f'{sys.path[0]}/id_image.ui', self)
+        self.image_path = ''
+
+    def load_image(self):
+        self.pix = QtGui.QPixmap(self.image_path)
+        self.pix = self.pix.scaledToWidth(self.image_view.width()-100)
+        self.pix = self.pix.scaledToHeight(self.image_view.height()-100)
+        self.item = QtWidgets.QGraphicsPixmapItem(self.pix)
+        self.scene = QtWidgets.QGraphicsScene(self)
+        self.scene.addItem(self.item)
+        self.image_view.setScene(self.scene)
+
+
 class RentBook(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -72,6 +86,8 @@ class RentBook(QMainWindow):
         self.cust_phone.setValidator(QtGui.QIntValidator())
         self.cust_house.setValidator(QtGui.QIntValidator())
         self.cust_bookrent_id.setValidator(QtGui.QIntValidator())
+        self.id_select.pressed.connect(self.get_id)
+        self.cust_idpicture = ''
         self.cust_startdate = '' 
         self.cust_duedate = '' 
         self.book_title = '' 
@@ -79,12 +95,18 @@ class RentBook(QMainWindow):
         self.book_cpyno = '' 
         self.customer_id = ''
         self.cust_alrexist = False
+        self.errorDialog = QErrorMessage()
+        self.errorDialog.setWindowTitle("Error")
+        self.errorDialog.setWindowModality(QtCore.Qt.ApplicationModal)
 
-    #def check_filled(self):
-        
-
+    def get_id(self):
+        image_path = QFileDialog.getOpenFileName(self, 'Select Image', os.getenv('HOME'), 'Images(*.csv *.xpm *.jpg)')[0]
+        self.cust_idpic.setText(image_path)
 
     def complete(self):
+        if self.checkempty():
+            self.errorDialog.showMessage("Invalid input, check for missing/incorrect fields.")
+            return
         reply = QMessageBox.question(self, 'Confirmation', 'Confirm Action')
         if reply == QMessageBox.Yes:
             pass
@@ -96,6 +118,7 @@ class RentBook(QMainWindow):
         brgy_add = self.cust_barangay.text()
         house_add = self.cust_house.text()
         self.customer_id = self.cust_id.text()
+        self.cust_idpicture = self.cust_idpic.text()
         self.cust_startdate = self.cust_start.dateTime().toString()
         self.cust_duedate = self.cust_due.dateTime().toString()
         start_date = convert_to_sql(self.cust_startdate)
@@ -104,8 +127,13 @@ class RentBook(QMainWindow):
         self.cust_duedate = convert_to_sql(self.cust_due.dateTime().toString())
         self.book_cpyno = self.cust_bookrent_id.text()
         book_price = self.cust_price.text()
+        mydb.execute(f"SELECT COUNT(*) FROM book_copy WHERE copy_number ={self.book_cpyno} AND book_status = 'Available'")
+        count = mydb.fetchone()
+        if count[0] == 0:
+            self.errorDialog.showMessage("Book with this copy number is not available.")
+            return
         if self.cust_alrexist == False:
-            mydb.execute(f"INSERT INTO customer VALUES({self.customer_id},'{customer_name}', 'None', '{phone_no}', '{street_add}', '{brgy_add}', {house_add})")
+            mydb.execute(f"INSERT INTO customer VALUES({self.customer_id},'{customer_name}', '{self.cust_idpicture}', '{phone_no}', '{street_add}', '{brgy_add}', {house_add})")
             db.commit()
         mydb.execute(f"INSERT INTO rents VALUES({self.customer_id}, {self.book_cpyno}, {book_price},'{start_date}', NULL , '{due_date}', DEFAULT)")
         db.commit() 
@@ -118,6 +146,7 @@ class RentBook(QMainWindow):
         mydb.execute(f"SELECT customer_id, full_name, id_image, phone_number, street, barangay, house_no FROM customer WHERE customer_id = '{self.customer_id}'")
         rows = mydb.fetchone()
         if rows == None:
+            self.cust_alrexist = False
             return
         self.cust_alrexist = True
         self.cust_name.setText(rows[1])
@@ -141,9 +170,29 @@ class RentBook(QMainWindow):
         due_time = datetime.datetime(due_time[0], due_time[1], due_time[2], due_time[3], due_time[4], due_time[5], due_time[6])
         rent_days = str((due_time - start_time))
         rent_days = int(rent_days.split()[0])
-        print(rent_days)
         rent_price = rent_days*self.book_price
         self.cust_price.setText(str(rent_price))
+    
+    def checkempty(self):
+        if len(self.cust_id.text()) == 0:
+            return True
+        elif len(self.cust_name.text()) == 0:
+            return True
+        elif len(self.cust_phone.text()) == 0:
+            return True
+        elif len(self.cust_street.text()) == 0:
+            return True
+        elif len(self.cust_barangay.text()) == 0:
+            return True
+        elif len(self.cust_house.text()) == 0:
+            return True
+        elif len(self.cust_bookrent_id.text()) == 0:
+            return True
+        elif len(self.cust_idpic.text()) == 0:
+            return True
+        return False
+        
+        
 
 class EditBook(QMainWindow):
     def __init__(self):
@@ -213,9 +262,11 @@ class RegisterWindow(QMainWindow):                  #Reggie
         uic.loadUi(f'{sys.path[0]}/user_register.ui', self)
         self.pushButton.pressed.connect(self.entry)
         self.error_dialog=QErrorMessage()
+        self.error_dialog.setWindowModality(QtCore.Qt.ApplicationModal)
         self.error_dialog.setWindowTitle("Error") 
         self.success_dialog=QErrorMessage()
         self.success_dialog.setWindowTitle("SUCCESS")
+        self.success_dialog.setWindowModality(QtCore.Qt.ApplicationModal)
         self.lineEdit.returnPressed.connect(self.entry)
         self.lineEdit_2.returnPressed.connect(self.entry)
         self.lineEdit_3.returnPressed.connect(self.entry)
@@ -264,6 +315,8 @@ class LoginWindow(QMainWindow):         #Reggie
 
         self.error_dialog=QErrorMessage()
         self.error_dialog.setWindowTitle("Error")
+        self.error_dialog.setWindowModality(QtCore.Qt.ApplicationModal)
+
 
     def get_usertype(self):     #login validation
         self.username=self.lineEdit.text()
@@ -298,10 +351,13 @@ class MainWindow (QMainWindow):
         super().__init__()        
         self.addbook_window = AddBook()
         self.rent_window = RentBook()
+        self.image_view = ImageView()
         self.headerlabels = ['ISBN','Genre','Author','Publish Date','Book Title','Rent Price', 'Status','Action']
         self.headerlabels2 = ['Customer ID', 'Book Copy', 'Customer Name','Phone Number','Book Title', 'Rent Price','Start Date','Due Date','Penalizations','Actions']
         self.error_dialog=QErrorMessage()
         self.error_dialog.setWindowTitle("Error")
+        self.error_dialog.setWindowModality(QtCore.Qt.ApplicationModal)
+
 
 
 
@@ -436,16 +492,26 @@ class MainWindow (QMainWindow):
             db.commit()
             return(overdue, overdue_fee, overdue_total)
 
-    def testfunc(self, row):
-        print(row)
-        duedate = convert_to_sql(QtCore.QDateTime.currentDateTime().toString(), True)
-        duedate = datetime.datetime(duedate[0],duedate[1],duedate[2],duedate[3],duedate[4],duedate[5],duedate[6],)
-        time_now = datetime.datetime.now()
-        print(duedate, time_now, (time_now - duedate))
-        overdue = str((time_now - duedate))
-        print(overdue)
-        # overdue = int(overdue.split()[0])
-        # print(overdue  )
+    def view_id(self, row, searchfor = None):
+
+        query_order = ' ORDER BY rents.due_date ASC'
+        query = ("SELECT customer.id_image "
+                "FROM rents INNER JOIN book_copy ON book_copy.copy_number = rents.cpy_no "
+                "INNER JOIN customer ON rents.c_id = customer.customer_id "
+                "INNER JOIN book ON book.isbn = book_copy.copy_isbn WHERE book_copy.book_status = 'Rented' AND rents.return_date is NULL")
+        query_search = query + f" AND customer.full_name LIKE '%{searchfor}%'" + query_order
+        query = query + query_order
+
+        if searchfor != None:
+            mydb.execute(query_search)
+        elif searchfor == None:   
+            mydb.execute(query)
+        rows = mydb.fetchall()
+        rows = (rows[row][0])
+        image_path = rows
+        self.image_view.image_path = image_path
+        self.image_view.load_image()
+        self.image_view.show()
 
     def return_book(self, row, searchfor = None):
         reply = QMessageBox.question(self, 'Confirmation', 'Confirm Action')
@@ -481,11 +547,11 @@ class MainWindow (QMainWindow):
         self.view_idButton = QPushButton('View ID') 
         if searchfor == None: 
             self.returnButton.pressed.connect(lambda: self.return_book(row))              
-            self.view_idButton.pressed.connect(lambda:self.testfunc(row))             
+            self.view_idButton.pressed.connect(lambda:self.view_id(row))             
 
         else:
             self.returnButton.pressed.connect(lambda: self.return_book(row,searchfor))            
-            self.view_idButton.pressed.connect(lambda:self.testfunc(row,searchfor))         
+            self.view_idButton.pressed.connect(lambda:self.view_id(row,searchfor))         
 
         self.actionLayout = QHBoxLayout() 
         self.actionLayout.addWidget(self.view_idButton,5) 
@@ -590,7 +656,6 @@ class MainWindow (QMainWindow):
         self.book_table.setColumnCount(numColumn+1)
         self.book_table.setRowCount(numRows)
         self.book_table.setHorizontalHeaderLabels(self.headerlabels)
-        print(rows)
 
             
         for i in range(numRows):

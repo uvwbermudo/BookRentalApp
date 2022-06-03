@@ -10,7 +10,7 @@ import os
 import datetime
 #cursor for manipulating database
 
-db = mysql.connector.connect(host = 'localhost', user = 'root', password = '123abc', database = 'book_rental') 
+db = mysql.connector.connect(host = 'localhost', user = 'root', password = '*P@ssw0rd', database = 'book_rental') 
 mydb = db.cursor(buffered=True) 
 
 # to fix gui not displaying properly on different resolutions
@@ -141,7 +141,7 @@ class RentBook(QMainWindow):
         due_time = datetime.datetime(due_time[0], due_time[1], due_time[2], due_time[3], due_time[4], due_time[5], due_time[6])
         rent_days = str((due_time - start_time))
         rent_days = int(rent_days.split()[0])
-
+        print(rent_days)
         rent_price = rent_days*self.book_price
         self.cust_price.setText(str(rent_price))
 
@@ -168,7 +168,7 @@ class AddBook(QMainWindow):
         book.append(self.book_title.text())
         book.append(self.book_price.text())
         
-        if self.searchisbn:
+        if self.searchisbn():
             mydb.execute(f"INSERT INTO book_copy VALUES({self.book_copynum.text()}, 'Available', {self.book_isbn.text()})")
             db.commit()
         else:
@@ -216,6 +216,9 @@ class RegisterWindow(QMainWindow):                  #Reggie
         self.error_dialog.setWindowTitle("Error") 
         self.success_dialog=QErrorMessage()
         self.success_dialog.setWindowTitle("SUCCESS")
+        self.lineEdit.returnPressed.connect(self.entry)
+        self.lineEdit_2.returnPressed.connect(self.entry)
+        self.lineEdit_3.returnPressed.connect(self.entry)
 
     def entry(self):
         self.username = self.lineEdit.text()
@@ -255,7 +258,10 @@ class LoginWindow(QMainWindow):         #Reggie
         self.register_window = RegisterWindow()
         uic.loadUi(f'{sys.path[0]}/user_login.ui', self)
         self.user_reg.pressed.connect(self.open_register)
-        self.user_login.pressed.connect(self.get_usertype) 
+        self.user_login.pressed.connect(self.get_usertype)
+        self.lineEdit.returnPressed.connect(self.get_usertype)
+        self.lineEdit_2.returnPressed.connect(self.get_usertype)
+
         self.error_dialog=QErrorMessage()
         self.error_dialog.setWindowTitle("Error")
 
@@ -298,6 +304,7 @@ class MainWindow (QMainWindow):
         self.error_dialog.setWindowTitle("Error")
 
 
+
         if self.user_type == 'Admin':
             uic.loadUi(f'{sys.path[0]}/admin.ui', self)
             self.book_addbutton.pressed.connect(self.open_addbook)
@@ -312,6 +319,8 @@ class MainWindow (QMainWindow):
         self.cust_searchbutton.pressed.connect(self.search_cust)
         self.hist_refresh.pressed.connect(self.display_history)
         self.switch_user.triggered.connect(self.close)
+        self.cust_searchbar.returnPressed.connect(self.search_cust)
+        self.book_searchbar.returnPressed.connect(self.search_book)
         self.display_monitoring()
         self.display_books()
         self.display_history()
@@ -410,8 +419,33 @@ class MainWindow (QMainWindow):
             self.actionWidget.setLayout(self.actionLayout) 
             return self.actionWidget 
 
+    def overduecheck(self, c_id, cpy_no, start_date):
+        mydb.execute(f"SELECT due_date FROM rents WHERE c_id = {c_id} and cpy_no={cpy_no} and start_date='{start_date}'")
+        rows = mydb.fetchone()
+        due_date = rows[0] 
+        mydb.execute(f"SELECT book.price FROM book INNER JOIN book_copy on book.isbn = book_copy.copy_isbn WHERE book_copy.copy_number ={cpy_no}")
+        book_price = mydb.fetchone()[0]
+        time_now = datetime.datetime.now()
+        overdue = int((str(time_now - due_date)).split()[0])
+        overdue_fee = int((int(book_price)*.20))
+        overdue_total = int(overdue_fee*overdue)
+        if overdue <= 0:
+            return False
+        else:
+            mydb.execute(f"UPDATE rents rents SET penalizations = {overdue_total} WHERE c_id = {c_id} and cpy_no={cpy_no} and start_date='{start_date}' ")
+            db.commit()
+            return(overdue, overdue_fee, overdue_total)
+
     def testfunc(self, row):
         print(row)
+        duedate = convert_to_sql(QtCore.QDateTime.currentDateTime().toString(), True)
+        duedate = datetime.datetime(duedate[0],duedate[1],duedate[2],duedate[3],duedate[4],duedate[5],duedate[6],)
+        time_now = datetime.datetime.now()
+        print(duedate, time_now, (time_now - duedate))
+        overdue = str((time_now - duedate))
+        print(overdue)
+        # overdue = int(overdue.split()[0])
+        # print(overdue  )
 
     def return_book(self, row, searchfor = None):
         reply = QMessageBox.question(self, 'Confirmation', 'Confirm Action')
@@ -420,18 +454,20 @@ class MainWindow (QMainWindow):
         else:
             return
         
-        if searchfor != None:
-            mydb.execute("SELECT rents.c_id, rents.cpy_no, customer.full_name, customer.phone_number, book.book_title, rents.rent_price, rents.start_date, rents.due_date, rents.penalizations "
-                        "FROM rents INNER JOIN book_copy ON book_copy.copy_number = rents.cpy_no "
-                        "INNER JOIN customer ON rents.c_id = customer.customer_id "
-                        f"INNER JOIN book ON book.isbn = book_copy.copy_isbn WHERE book_copy.book_status = 'Rented' AND customer.full_name LIKE '%{searchfor}%' AND rents.return_date is NULL ORDER BY rents.due_date ASC")
-        else:   
-            mydb.execute("SELECT rents.c_id, rents.cpy_no, customer.full_name, customer.phone_number, book.book_title, rents.rent_price, rents.start_date, rents.due_date, rents.penalizations "
-                        "FROM rents INNER JOIN book_copy ON book_copy.copy_number = rents.cpy_no "
-                        "INNER JOIN customer ON rents.c_id = customer.customer_id "
-                        "INNER JOIN book ON book.isbn = book_copy.copy_isbn WHERE book_copy.book_status = 'Rented' AND rents.return_date is NULL ORDER BY rents.due_date ASC")
-        rows = mydb.fetchall()
+        query_order = " ORDER BY rents.due_date ASC"
+        query = ("SELECT rents.c_id, rents.cpy_no, customer.full_name, customer.phone_number, book.book_title, rents.rent_price, rents.start_date, rents.due_date, rents.penalizations "
+                "FROM rents INNER JOIN book_copy ON book_copy.copy_number = rents.cpy_no "
+                "INNER JOIN customer ON rents.c_id = customer.customer_id "
+                "INNER JOIN book ON book.isbn = book_copy.copy_isbn WHERE book_copy.book_status = 'Rented' AND rents.return_date is NULL")
+        query_search = query + f" AND customer.full_name LIKE '%{searchfor}%'" + query_order
+        query = query + query_order
 
+        if searchfor != None:
+            mydb.execute(query_search)
+        elif searchfor == None:   
+            mydb.execute(query)
+
+        rows = mydb.fetchall()
         rows = list(rows[row])
         mydb.execute(f"UPDATE rents SET return_date = NOW() where c_id = {rows[0]} and cpy_no = {rows[1]} and start_date = '{rows[6]}'")
         mydb.execute(f"UPDATE book_copy SET book_status = 'Available' WHERE copy_number = {rows[1]}")
@@ -464,50 +500,44 @@ class MainWindow (QMainWindow):
         hheader.setSectionResizeMode(QHeaderView.Stretch)
         vheader = self.cust_table.verticalHeader()
         vheader.setSectionResizeMode(QHeaderView.Fixed)        
-        vheader.setDefaultSectionSize(40)
+        vheader.setDefaultSectionSize(50)
         numColumn = 9
 
+        query_order = ' ORDER BY rents.due_date ASC'
+        query = ("SELECT rents.c_id, rents.cpy_no, customer.full_name, customer.phone_number, book.book_title, rents.rent_price, rents.start_date, rents.due_date, rents.penalizations "
+                "FROM rents INNER JOIN book_copy ON book_copy.copy_number = rents.cpy_no "
+                "INNER JOIN customer ON rents.c_id = customer.customer_id "
+                "INNER JOIN book ON book.isbn = book_copy.copy_isbn WHERE book_copy.book_status = 'Rented' AND rents.return_date is NULL")
+        query_search = query + f" AND customer.full_name LIKE '%{searchfor}%'" + query_order
+        query = query + query_order
+    
         if search == True and searchfor != None:                        #if displaying a search
-            mydb.execute("SELECT rents.c_id, rents.cpy_no, customer.full_name, customer.phone_number, book.book_title, rents.rent_price, rents.start_date, rents.due_date, rents.penalizations "
-                        "FROM rents INNER JOIN book_copy ON book_copy.copy_number = rents.cpy_no "
-                        "INNER JOIN customer ON rents.c_id = customer.customer_id "
-                        f"INNER JOIN book ON book.isbn = book_copy.copy_isbn WHERE book_copy.book_status = 'Rented' AND customer.full_name LIKE '%{searchfor}%' AND rents.return_date is NULL ORDER BY rents.due_date ASC ")
-            rows = mydb.fetchall()
-            numRows = len(rows)
-            print("TESTING HERE", rows)
-            self.cust_table.setColumnCount(numColumn+1)
-            self.cust_table.setRowCount(numRows)
-            self.cust_table.setHorizontalHeaderLabels(self.headerlabels2)
-            
-            for i in range(numRows):
-                for j in range(numColumn):
-                    self.cust_table.setItem(i, j, QTableWidgetItem(str(rows[i][j])))
-    
-                actionWidget = self.make_buttons2(i,searchfor)            #REFER TO makebuttons function for details    
-                self.cust_table.setCellWidget(i, 9, actionWidget)
-
+            mydb.execute(query_search)
         
-        elif search == False and searchfor == None:     #default display
-            mydb.execute("SELECT COUNT(*) FROM rents INNER JOIN book_copy on rents.cpy_no = book_copy.copy_number where book_copy.book_status = 'Rented' and rents.return_date is NULL")
-            numRows = mydb.fetchone()
-            numRows = numRows[0]
-            self.cust_table.setColumnCount(numColumn+1)
-            self.cust_table.setRowCount(numRows)
-            self.cust_table.setHorizontalHeaderLabels(self.headerlabels2)
-            
-            mydb.execute("SELECT rents.c_id, rents.cpy_no, customer.full_name, customer.phone_number, book.book_title, rents.rent_price, rents.start_date, rents.due_date, rents.penalizations "
-                        "FROM rents INNER JOIN book_copy ON book_copy.copy_number = rents.cpy_no "
-                        "INNER JOIN customer ON rents.c_id = customer.customer_id "
-                        "INNER JOIN book ON book.isbn = book_copy.copy_isbn WHERE book_copy.book_status = 'Rented' AND rents.return_date is NULL ORDER BY rents.due_date ASC")
+        elif search == False and searchfor == None:
+            mydb.execute(query)
     
-            rows = mydb.fetchall()
-            for i in range(numRows):
-                for j in range(numColumn):
-                    self.cust_table.setItem(i, j, QTableWidgetItem(str(rows[i][j])))
-                actionWidget = self.make_buttons2(i)                    #REFER TO makebuttons function for details
-                self.cust_table.setCellWidget(i, 9, actionWidget)
+        rows = mydb.fetchall()
+        numRows = len(rows)
+        self.cust_table.setColumnCount(numColumn+1)
+        self.cust_table.setRowCount(numRows)
+        self.cust_table.setHorizontalHeaderLabels(self.headerlabels2)
+    
+        for i in range(numRows):
+            for j in range(numColumn):
+                if j == 8:
+                    penalization = self.overduecheck(rows[i][0], rows[i][1], rows[i][6])
+                    if penalization == False:
+                        pass
+                    else:
+                        penalization_text = f"Penalization: {penalization[1]} per day \nOverdue: {penalization[0]} days\nTotal:{penalization[2]}"
+                        self.cust_table.setItem(i, j, QTableWidgetItem(str(penalization_text)))
+                        continue
+                self.cust_table.setItem(i, j, QTableWidgetItem(str(rows[i][j])))
+            actionWidget = self.make_buttons2(i, searchfor)                    #REFER TO makebuttons function for details
+            self.cust_table.setCellWidget(i, 9, actionWidget)
 
-            #'Customer ID', 'Book Copy', 'Customer Name','Book Title', 'Rent Price','Start Date','Due Date','Penalizations','Actions'
+        #'Customer ID', 'Book Copy', 'Customer Name','Book Title', 'Rent Price','Start Date','Due Date','Penalizations','Actions'
 
 
     def display_history(self):
@@ -520,19 +550,18 @@ class MainWindow (QMainWindow):
         tempheader = self.headerlabels2[:-1]
         tempheader.append('Date Returned')
 
-        mydb.execute("SELECT COUNT(*) FROM rents INNER JOIN book_copy on rents.cpy_no = book_copy.copy_number")
-        numRows = mydb.fetchone()
-        numRows = numRows[0]
-        self.hist_table.setColumnCount(numColumn)
-        self.hist_table.setRowCount(numRows)
-        self.hist_table.setHorizontalHeaderLabels(tempheader)
-        
         mydb.execute("SELECT rents.c_id, rents.cpy_no, customer.full_name, customer.phone_number, book.book_title, rents.rent_price, rents.start_date, rents.due_date, rents.penalizations, rents.return_date "
                     "FROM rents INNER JOIN book_copy ON book_copy.copy_number = rents.cpy_no "
                     "INNER JOIN customer ON rents.c_id = customer.customer_id "
                     "INNER JOIN book ON book.isbn = book_copy.copy_isbn ORDER BY rents.start_date DESC")
 
         rows = mydb.fetchall()
+        numRows = len(rows)
+        self.hist_table.setColumnCount(numColumn)
+        self.hist_table.setRowCount(numRows)
+        self.hist_table.setHorizontalHeaderLabels(tempheader)
+        
+        
         for i in range(numRows):
             for j in range(numColumn):
                 if j == 9 and rows[i][9] == None:
@@ -548,80 +577,46 @@ class MainWindow (QMainWindow):
         vheader.setDefaultSectionSize(50)
         numColumn = 7
 
-        if search == True and searchfor != None:                        #if displaying a search
-            mydb.execute(f"SELECT COUNT(*) FROM book WHERE book_title LIKE '%{searchfor}%' OR author LIKE '%{searchfor}%'")
-            numRows = mydb.fetchone()
-            numRows = numRows[0]
-            self.book_table.setColumnCount(numColumn+1)
-            self.book_table.setRowCount(numRows)
-            self.book_table.setHorizontalHeaderLabels(self.headerlabels)
-            
-            mydb.execute(f"SELECT isbn, genre, author, publish_date, book_title, price from book WHERE book_title LIKE '%{searchfor}%' OR author LIKE '%{searchfor}%'")
-            rows = mydb.fetchall()
-            
-            for i in range(numRows):
-                for j in range(numColumn):
-                        if j == 6:
-                            mydb.execute("SELECT * FROM book_copy INNER JOIN book ON book_copy.copy_isbn = book.isbn " 
-                                        f"WHERE book_copy.book_status = 'Available' AND book.isbn = {rows[i][0]}")
-                            available = mydb.fetchall()
-                            available = len(available)
-                            mydb.execute("SELECT * FROM book_copy INNER JOIN book ON book_copy.copy_isbn = book.isbn " 
-                                        f"WHERE book_copy.book_status = 'Rented' AND book.isbn = {rows[i][0]}")
-                            rented = mydb.fetchall()
-                            rented = len(rented)
-                            mydb.execute("SELECT * FROM book_copy INNER JOIN book ON book_copy.copy_isbn = book.isbn " 
-                                        f"AND book.isbn = {rows[i][0]}")
-                            total = mydb.fetchall()
-                            total = len(total)                            
-                            availability = f"Available: {available} \nRented: {rented}\nTotal: {total}"
-
-                            self.book_table.setItem(i, j, QTableWidgetItem(str(availability)))
-                            continue
-                        self.book_table.setItem(i, j, QTableWidgetItem(str(rows[i][j])))
-                    
-                actionWidget = self.make_buttons(i,searchfor)            #REFER TO makebuttons function for details    
-                self.book_table.setCellWidget(i, 7, actionWidget)
-
-        
-        elif search == False and searchfor == None:     #default display
-            mydb.execute("SELECT COUNT(*) FROM book")
-            numRows = mydb.fetchone()
-            numRows = numRows[0]
-            self.book_table.setColumnCount(numColumn+1)
-            self.book_table.setRowCount(numRows)
-            self.book_table.setHorizontalHeaderLabels(self.headerlabels)
-            
-            mydb.execute("SELECT isbn, genre, author, publish_date, book_title, price from book")
-            rows = mydb.fetchall()
+        query = "SELECT isbn, genre, author, publish_date, book_title, price from book"
+        query_search = query + f" WHERE book_title LIKE '%{searchfor}%' OR author LIKE '%{searchfor}%'"
     
-            for i in range(numRows):
-                for j in range(numColumn):
-                        if j == 6:
-                            mydb.execute("SELECT * FROM book_copy INNER JOIN book ON book_copy.copy_isbn = book.isbn " 
-                                        f"WHERE book_copy.book_status = 'Available' AND book.isbn = {rows[i][0]}")
-                            available = mydb.fetchall()
-                            available = len(available)
-                            mydb.execute("SELECT * FROM book_copy INNER JOIN book ON book_copy.copy_isbn = book.isbn " 
-                                        f"WHERE book_copy.book_status = 'Rented' AND book.isbn = {rows[i][0]}")
-                            rented = mydb.fetchall()
-                            rented = len(rented)
-                            mydb.execute("SELECT * FROM book_copy INNER JOIN book ON book_copy.copy_isbn = book.isbn " 
-                                        f"AND book.isbn = {rows[i][0]}")
-                            total = mydb.fetchall()
-                            total = len(total)
-                            
-                            availability = f"Available: {available} \nRented: {rented}\nTotal: {total}"
+        if search == True and searchfor != None:                        #if displaying a search
+            mydb.execute(query_search)
+        elif search == False and searchfor == None:
+            mydb.execute(query)
+        
+        rows = mydb.fetchall()
+        numRows = len(rows)
+        self.book_table.setColumnCount(numColumn+1)
+        self.book_table.setRowCount(numRows)
+        self.book_table.setHorizontalHeaderLabels(self.headerlabels)
+        print(rows)
 
-                            self.book_table.setItem(i, j, QTableWidgetItem(str(availability)))
-                            print("I GOT HERE TOO")
+            
+        for i in range(numRows):
+            for j in range(numColumn):
+                    if j == 6:
+                        mydb.execute("SELECT * FROM book_copy INNER JOIN book ON book_copy.copy_isbn = book.isbn " 
+                                    f"WHERE book_copy.book_status = 'Available' AND book.isbn = {rows[i][0]}")
+                        available = mydb.fetchall()
+                        available = len(available)
+                        mydb.execute("SELECT * FROM book_copy INNER JOIN book ON book_copy.copy_isbn = book.isbn " 
+                                    f"WHERE book_copy.book_status = 'Rented' AND book.isbn = {rows[i][0]}")
+                        rented = mydb.fetchall()
+                        rented = len(rented)
+                        mydb.execute("SELECT * FROM book_copy INNER JOIN book ON book_copy.copy_isbn = book.isbn " 
+                                    f"AND book.isbn = {rows[i][0]}")
+                        total = mydb.fetchall()
+                        total = len(total)                            
+                        availability = f"Available: {available} \nRented: {rented}\nTotal: {total}"
 
-                            continue
-                        self.book_table.setItem(i, j, QTableWidgetItem(str(rows[i][j])))
-                    
-                actionWidget = self.make_buttons(i)            #REFER TO makebuttons function for details
-                self.book_table.setCellWidget(i, 7, actionWidget)
-            print("I GOT HERE")
+                        self.book_table.setItem(i, j, QTableWidgetItem(str(availability)))
+                        continue
+                    self.book_table.setItem(i, j, QTableWidgetItem(str(rows[i][j])))
+                
+            actionWidget = self.make_buttons(i,searchfor)            #REFER TO makebuttons function for details    
+            self.book_table.setCellWidget(i, 7, actionWidget)
+
 
     def search_cust(self):
         search_this = self.cust_searchbar.text()

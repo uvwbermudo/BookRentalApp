@@ -1,1 +1,2 @@
-j == 9 and rows[i][j] == None
+overdue = int(overdue.split()[0])
+        # print(overdue  )

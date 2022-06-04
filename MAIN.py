@@ -229,6 +229,8 @@ class EditBook(QMainWindow):
         uic.loadUi(f'{sys.path[0]}/admin_editbook.ui', self) 
         self.error_dialog=QErrorMessage()
         self.error_dialog.setWindowTitle("Error")
+        self.success_dialog=QErrorMessage() #03/06
+        self.success_dialog.setWindowTitle("SUCCESS") #03/06
         self.done_add.pressed.connect(self.inputBook)
 
     def getBook(self, row, searchfor):
@@ -241,6 +243,14 @@ class EditBook(QMainWindow):
         self.getisbn = rows[0]
         self.autofill(rows)
 
+    def checkEmpty(self, book):
+        for data in book:
+            if not data:
+                print("empty", data)
+                return True
+            else:
+                print("Not empty",data)
+        
     def inputBook(self):
         book = []
         book.append(self.book_isbn.text())
@@ -250,22 +260,30 @@ class EditBook(QMainWindow):
         book.append(self.book_title.text())
         book.append(self.book_price.text())
         book.append(self.getisbn)
+        if self.checkEmpty(book):
+            self.error_dialog.showMessage('You have entered invalid information.')
+        else:
+            #03/06
+            reply = QMessageBox.question(self, 'Confirmation', 'Are you sure you want to edit this book? This action cannot be undone.') 
+            if reply == QMessageBox.Yes:
+                try:
+                    sqlUpdate = "UPDATE book SET isbn = %s, genre = %s, author = %s, publish_date = %s, book_title = %s, price = %s where isbn = %s"
+                    mydb.execute(sqlUpdate,book)
+                    db.commit()
+                    self.book_isbn.clear()
+                    self.book_title.clear()
+                    self.book_author.clear()
+                    self.book_genre.clear()
+                    self.book_date.setDateTime(QtCore.QDateTime(2000,1,1,1,0,0))
+                    self.book_price.clear()
+                    self.close()
+                    self.success_dialog.showMessage('Book edited successfully!')
+                except:
+                    self.error_dialog.showMessage('ISBN exists. Enter a new one')
+                    self.book_isbn.clear()
+            else:
+                return
         
-        try:
-            sqlUpdate = "UPDATE book SET isbn = %s, genre = %s, author = %s, publish_date = %s, book_title = %s, price = %s where isbn = %s"
-            mydb.execute(sqlUpdate,book)
-            db.commit()
-            self.book_isbn.clear()
-            self.book_title.clear()
-            self.book_author.clear()
-            self.book_genre.clear()
-            self.book_date.setDateTime(QtCore.QDateTime(2000,1,1,1,0,0))
-            self.book_price.clear()
-            self.close()
-        except:
-            self.error_dialog.showMessage('ISBN exists. Enter a new one')
-            self.book_isbn.clear()
-
     def autofill(self, rows):
         self.book_isbn.setText(str(rows[0]))
         self.book_title.setText(rows[4])
@@ -280,36 +298,58 @@ class AddBook(QMainWindow):
         uic.loadUi(f'{sys.path[0]}/admin_addbook.ui', self)
         self.error_dialog=QErrorMessage()
         self.error_dialog.setWindowTitle("Error")
+        self.success_dialog=QErrorMessage() #03/06
+        self.success_dialog.setWindowTitle("SUCCESS") #03/06
         self.done_add.pressed.connect(self.inputBook)
         self.book_isbnsearch.pressed.connect(self.searchisbn)
-
-    def inputBook(self):
-        book = []
-        book.append(self.book_isbn.text())
-        book.append(self.book_genre.text())
-        book.append(self.book_author.text())
-        book.append(self.book_date.text()[6:]+'-'+self.book_date.text()[3:5]+'-'+self.book_date.text()[0:2])
-        book.append(self.book_title.text())
-        book.append(self.book_price.text())
         
-        if self.search():
-            mydb.execute(f"INSERT INTO book_copy VALUES({self.book_copynum.text()}, 'Available', {self.book_isbn.text()})")
-            db.commit()
-        else:
-            sqlInsert = "INSERT INTO book VALUES (%s, %s, %s, %s, %s, %s)"
-            mydb.execute(sqlInsert, book)
-            db.commit()
-
-            mydb.execute(f"INSERT INTO book_copy VALUES({self.book_copynum.text()}, 'Available', {self.book_isbn.text()})")
-            db.commit()
-        self.book_isbn.clear()
+    #03/06
+    def clearInfo(self):
         self.book_copynum.clear()
         self.book_title.clear()
         self.book_author.clear()
         self.book_genre.clear()
         self.book_date.setDateTime(QtCore.QDateTime(2000,1,1,1,0,0))
         self.book_price.clear()
-        self.close()
+        
+    def inputBook(self):
+        book = []
+        try:
+            book.append(int(self.book_isbn.text()))
+        except:
+            self.error_dialog.showMessage('Invalid ISBN.')
+            return
+        book.append(self.book_genre.text())
+        book.append(self.book_author.text())
+        book.append(self.book_date.text()[6:]+'-'+self.book_date.text()[3:5]+'-'+self.book_date.text()[0:2])
+        book.append(self.book_title.text())
+        book.append(self.book_price.text())
+        reply = QMessageBox.question(self, 'Confirmation', 'Are you sure you want to add this book? This action cannot be undone.') 
+        if reply == QMessageBox.Yes:
+            #03/06
+            if self.search():
+                try: #03/06
+                    mydb.execute(f"INSERT INTO book_copy VALUES({self.book_copynum.text()}, 'Available', {self.book_isbn.text()})")
+                    db.commit()
+                except:
+                    self.error_dialog.showMessage('Enter a new copy number')
+                    self.book_copynum.clear()
+                    return
+            else:
+                try: #04/06
+                    sqlInsert = "INSERT INTO book VALUES (%s, %s, %s, %s, %s, %s)"
+                    mydb.execute(sqlInsert, book)
+                    db.commit()
+
+                    mydb.execute(f"INSERT INTO book_copy VALUES({self.book_copynum.text()}, 'Available', {self.book_isbn.text()})")
+                    db.commit()
+                except:
+                    self.error_dialog.showMessage('You have entered invalid information.')
+                    return
+            self.close()
+            self.success_dialog.showMessage('Book added successfully!')
+        else:
+            return
         
     def search(self):
         mydb.execute(f"SELECT * FROM book WHERE isbn = {self.book_isbn.text()}")
@@ -323,9 +363,20 @@ class AddBook(QMainWindow):
         rows = self.search()
         if rows:
             self.autofill(rows)
+            self.book_title.setReadOnly(True) #03/06
+            self.book_author.setReadOnly(True) #03/06
+            self.book_genre.setReadOnly(True) #03/06
+            self.book_date.setReadOnly(True) #03/06
+            self.book_price.setReadOnly(True) #03/06
             return 1
         else:
             self.error_dialog.showMessage('No ISBN found.')
+            self.clearInfo()
+            self.book_title.setReadOnly(False) #04/06
+            self.book_author.setReadOnly(False) #04/06
+            self.book_genre.setReadOnly(False) #04/06
+            self.book_date.setReadOnly(False) #04/06
+            self.book_price.setReadOnly(False) #04/06
             return 0
 
     def autofill(self, rows):
@@ -440,6 +491,8 @@ class MainWindow (QMainWindow):
         self.headerlabels2 = ['Customer ID', 'Book Copy', 'Customer Name','Phone Number','Book Title', 'Rent Price','Start Date','Due Date','Penalizations','Actions']
         self.error_dialog=QErrorMessage()
         self.error_dialog.setWindowTitle("Error")
+        self.success_dialog=QErrorMessage() #03/06
+        self.success_dialog.setWindowTitle("SUCCESS") #03/06
         self.error_dialog.setWindowModality(QtCore.Qt.ApplicationModal)
 
 
@@ -503,6 +556,8 @@ class MainWindow (QMainWindow):
         self.rent_window.show()
     
     def open_addbook(self):                                             #! PA IMPLEMENT KO SOPHIA
+        self.addbook_window.book_isbn.clear()
+        self.addbook_window.clearInfo()
         self.addbook_window.show()
 
     def open_editbook(self, row, searchfor):
@@ -519,6 +574,8 @@ class MainWindow (QMainWindow):
         if reply == QMessageBox.Yes:
             mydb.execute(f"DELETE FROM book WHERE isbn = {rows[0]}")
             db.commit()
+            self.success_dialog.showMessage("Book deleted successfully!")
+            self.display_books()
         else:
             return
     

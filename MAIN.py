@@ -229,11 +229,11 @@ class EditBook(QMainWindow):
         uic.loadUi(f'{sys.path[0]}/admin_editbook.ui', self) 
         self.error_dialog=QErrorMessage()
         self.error_dialog.setWindowTitle("Error")
-        self.success_dialog=QErrorMessage() #03/06
-        self.success_dialog.setWindowTitle("SUCCESS") #03/06
+        self.success_dialog=QErrorMessage() 
+        self.success_dialog.setWindowTitle("SUCCESS") 
         self.done_add.pressed.connect(self.inputBook)
 
-    def getBook(self, row, searchfor):
+    def getBook(self, row, searchfor): #Get book data in database
         self.getisbn = ''
         if searchfor == None:
             mydb.execute(f"SELECT * FROM book LIMIT {row}, 1")
@@ -243,15 +243,12 @@ class EditBook(QMainWindow):
         self.getisbn = rows[0]
         self.autofill(rows)
 
-    def checkEmpty(self, book):
+    def checkEmpty(self, book): #Check if text line is empty
         for data in book:
             if not data:
-                print("empty", data)
                 return True
-            else:
-                print("Not empty",data)
         
-    def inputBook(self):
+    def inputBook(self): #Function for updating book data to database
         book = []
         book.append(self.book_isbn.text())
         book.append(self.book_genre.text())
@@ -263,10 +260,9 @@ class EditBook(QMainWindow):
         if self.checkEmpty(book):
             self.error_dialog.showMessage('You have entered invalid information.')
         else:
-            #03/06
             reply = QMessageBox.question(self, 'Confirmation', 'Are you sure you want to edit this book? This action cannot be undone.') 
             if reply == QMessageBox.Yes:
-                try:
+                try: #Check if isbn exists
                     sqlUpdate = "UPDATE book SET isbn = %s, genre = %s, author = %s, publish_date = %s, book_title = %s, price = %s where isbn = %s"
                     mydb.execute(sqlUpdate,book)
                     db.commit()
@@ -284,7 +280,7 @@ class EditBook(QMainWindow):
             else:
                 return
         
-    def autofill(self, rows):
+    def autofill(self, rows): #autofill
         self.book_isbn.setText(str(rows[0]))
         self.book_title.setText(rows[4])
         self.book_author.setText(rows[2])
@@ -298,13 +294,12 @@ class AddBook(QMainWindow):
         uic.loadUi(f'{sys.path[0]}/admin_addbook.ui', self)
         self.error_dialog=QErrorMessage()
         self.error_dialog.setWindowTitle("Error")
-        self.success_dialog=QErrorMessage() #03/06
-        self.success_dialog.setWindowTitle("SUCCESS") #03/06
+        self.success_dialog=QErrorMessage()
+        self.success_dialog.setWindowTitle("SUCCESS") 
         self.done_add.pressed.connect(self.inputBook)
         self.book_isbnsearch.pressed.connect(self.searchisbn)
         
-    #03/06
-    def clearInfo(self):
+    def clearInfo(self): #Clear Text Line
         self.book_copynum.clear()
         self.book_title.clear()
         self.book_author.clear()
@@ -312,9 +307,9 @@ class AddBook(QMainWindow):
         self.book_date.setDateTime(QtCore.QDateTime(2000,1,1,1,0,0))
         self.book_price.clear()
         
-    def inputBook(self):
+    def inputBook(self): #Function for inserting book data to database
         book = []
-        try:
+        try: #check if isbn is int
             book.append(int(self.book_isbn.text()))
         except:
             self.error_dialog.showMessage('Invalid ISBN.')
@@ -326,9 +321,8 @@ class AddBook(QMainWindow):
         book.append(self.book_price.text())
         reply = QMessageBox.question(self, 'Confirmation', 'Are you sure you want to add this book? This action cannot be undone.') 
         if reply == QMessageBox.Yes:
-            #03/06
             if self.search():
-                try: #03/06
+                try: #Check if copy_number exists in database
                     mydb.execute(f"INSERT INTO book_copy VALUES({self.book_copynum.text()}, 'Available', {self.book_isbn.text()})")
                     db.commit()
                 except:
@@ -336,7 +330,7 @@ class AddBook(QMainWindow):
                     self.book_copynum.clear()
                     return
             else:
-                try: #04/06
+                try: #Check if ocrrect info given
                     sqlInsert = "INSERT INTO book VALUES (%s, %s, %s, %s, %s, %s)"
                     mydb.execute(sqlInsert, book)
                     db.commit()
@@ -351,7 +345,7 @@ class AddBook(QMainWindow):
         else:
             return
         
-    def search(self):
+    def search(self): #Search isbn in database
         mydb.execute(f"SELECT * FROM book WHERE isbn = {self.book_isbn.text()}")
         rows = mydb.fetchall()
         if rows:
@@ -359,27 +353,27 @@ class AddBook(QMainWindow):
         else:
             return 0
         
-    def searchisbn(self):
+    def searchisbn(self): #Search isbn
         rows = self.search()
         if rows:
             self.autofill(rows)
-            self.book_title.setReadOnly(True) #03/06
-            self.book_author.setReadOnly(True) #03/06
-            self.book_genre.setReadOnly(True) #03/06
-            self.book_date.setReadOnly(True) #03/06
-            self.book_price.setReadOnly(True) #03/06
+            self.book_title.setReadOnly(True)
+            self.book_author.setReadOnly(True)
+            self.book_genre.setReadOnly(True)
+            self.book_date.setReadOnly(True)
+            self.book_price.setReadOnly(True)
             return 1
         else:
             self.error_dialog.showMessage('No ISBN found.')
             self.clearInfo()
-            self.book_title.setReadOnly(False) #04/06
-            self.book_author.setReadOnly(False) #04/06
-            self.book_genre.setReadOnly(False) #04/06
-            self.book_date.setReadOnly(False) #04/06
-            self.book_price.setReadOnly(False) #04/06
+            self.book_title.setReadOnly(False)
+            self.book_author.setReadOnly(False)
+            self.book_genre.setReadOnly(False)
+            self.book_date.setReadOnly(False)
+            self.book_price.setReadOnly(False)
             return 0
 
-    def autofill(self, rows):
+    def autofill(self, rows): #Autofill
         self.book_title.setText(rows[0][4])
         self.book_author.setText(rows[0][2])
         self.book_genre.setText(rows[0][1])
@@ -491,8 +485,8 @@ class MainWindow (QMainWindow):
         self.headerlabels2 = ['Customer ID', 'Book Copy', 'Customer Name','Phone Number','Book Title', 'Rent Price','Start Date','Due Date','Penalizations','Actions']
         self.error_dialog=QErrorMessage()
         self.error_dialog.setWindowTitle("Error")
-        self.success_dialog=QErrorMessage() #03/06
-        self.success_dialog.setWindowTitle("SUCCESS") #03/06
+        self.success_dialog=QErrorMessage()
+        self.success_dialog.setWindowTitle("SUCCESS")
         self.error_dialog.setWindowModality(QtCore.Qt.ApplicationModal)
 
 
@@ -598,12 +592,12 @@ class MainWindow (QMainWindow):
             self.editButton = QPushButton('Edit')
             self.deleteButton = QPushButton('Delete') 
             if searchfor == None: 
-                self.editButton.pressed.connect(lambda:self.open_editbook(row, searchfor))              #! sophia dire i connect imong function for editing #02/06
-                self.deleteButton.pressed.connect(lambda:self.delete_book(row, searchfor))             #! sophia dire sa pag delete  #03/06
+                self.editButton.pressed.connect(lambda:self.open_editbook(row, searchfor))
+                self.deleteButton.pressed.connect(lambda:self.delete_book(row, searchfor))
 
             else:
-                self.editButton.pressed.connect(lambda: self.open_editbook(row, searchfor))            #! sophia 
-                self.deleteButton.pressed.connect(lambda:self.delete_book(row, searchfor))           #! sophia 
+                self.editButton.pressed.connect(lambda: self.open_editbook(row, searchfor))
+                self.deleteButton.pressed.connect(lambda:self.delete_book(row, searchfor)) 
 
             self.actionLayout = QHBoxLayout() 
             self.actionLayout.addWidget(self.deleteButton,5) 

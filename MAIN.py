@@ -261,7 +261,7 @@ class EditBook(QMainWindow):
         if self.checkEmpty(book):
             self.error_dialog.showMessage('You have entered invalid information.')
         else:
-            reply = QMessageBox.question(self, 'Confirmation', 'Are you sure you want to edit this book? This action cannot be undone.') 
+            reply = QMessageBox.question(self, 'Confirmation', 'Are you sure you want to edit this book?') 
             if reply == QMessageBox.Yes:
                 try: #Check if isbn exists
                     sqlUpdate = "UPDATE book SET isbn = %s, genre = %s, author = %s, publish_date = %s, book_title = %s, price = %s where isbn = %s"
@@ -320,7 +320,7 @@ class AddBook(QMainWindow):
         book.append(self.book_date.text()[6:]+'-'+self.book_date.text()[3:5]+'-'+self.book_date.text()[0:2])
         book.append(self.book_title.text())
         book.append(self.book_price.text())
-        reply = QMessageBox.question(self, 'Confirmation', 'Are you sure you want to add this book? This action cannot be undone.') 
+        reply = QMessageBox.question(self, 'Confirmation', 'Are you sure you want to add this book?') 
         if reply == QMessageBox.Yes:
             if self.search():
                 try: #Check if copy_number exists in database

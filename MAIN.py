@@ -708,7 +708,7 @@ class MainWindow (QMainWindow):
 
     def display_monitoring(self, search = False, searchfor = None):
         hheader = self.cust_table.horizontalHeader()          
-        hheader.setSectionResizeMode(QHeaderView.ResizeToContents)
+        hheader.setSectionResizeMode(QHeaderView.Stretch)
         vheader = self.cust_table.verticalHeader()
         vheader.setSectionResizeMode(QHeaderView.ResizeToContents)        
         vheader.setDefaultSectionSize(50)
@@ -756,7 +756,7 @@ class MainWindow (QMainWindow):
 
     def display_history(self):
         hheader = self.hist_table.horizontalHeader()          
-        hheader.setSectionResizeMode(QHeaderView.ResizeToContents)
+        hheader.setSectionResizeMode(QHeaderView.Stretch)
         vheader = self.hist_table.verticalHeader()
         vheader.setSectionResizeMode(QHeaderView.ResizeToContents)        
         vheader.setDefaultSectionSize(50)
@@ -788,7 +788,7 @@ class MainWindow (QMainWindow):
 
     def display_books(self, search = False, searchfor = None):          #SEARCH == TRUE - MEANING DISPLAYING FOR A SEARCH, SEARCHFOR = SEARCHED KEYWORD
         hheader = self.book_table.horizontalHeader()          
-        hheader.setSectionResizeMode(QHeaderView.ResizeToContents)
+        hheader.setSectionResizeMode(QHeaderView.Stretch)
         vheader = self.book_table.verticalHeader()
         vheader.setSectionResizeMode(QHeaderView.ResizeToContents)        
         vheader.setDefaultSectionSize(50)

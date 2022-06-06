@@ -710,7 +710,7 @@ class MainWindow (QMainWindow):
         hheader = self.cust_table.horizontalHeader()          
         hheader.setSectionResizeMode(QHeaderView.Stretch)
         vheader = self.cust_table.verticalHeader()
-        vheader.setSectionResizeMode(QHeaderView.Fixed)        
+        vheader.setSectionResizeMode(QHeaderView.ResizeToContents)        
         vheader.setDefaultSectionSize(50)
         numColumn = 9
 
@@ -758,8 +758,8 @@ class MainWindow (QMainWindow):
         hheader = self.hist_table.horizontalHeader()          
         hheader.setSectionResizeMode(QHeaderView.Stretch)
         vheader = self.hist_table.verticalHeader()
-        vheader.setSectionResizeMode(QHeaderView.Fixed)        
-        vheader.setDefaultSectionSize(40)
+        vheader.setSectionResizeMode(QHeaderView.ResizeToContents)        
+        vheader.setDefaultSectionSize(50)
         numColumn = 10
         tempheader = self.headerlabels2[:-1]
         tempheader.append('Date Returned')
@@ -790,7 +790,7 @@ class MainWindow (QMainWindow):
         hheader = self.book_table.horizontalHeader()          
         hheader.setSectionResizeMode(QHeaderView.Stretch)
         vheader = self.book_table.verticalHeader()
-        vheader.setSectionResizeMode(QHeaderView.Fixed)        
+        vheader.setSectionResizeMode(QHeaderView.ResizeToContents)        
         vheader.setDefaultSectionSize(50)
         numColumn = 7
 

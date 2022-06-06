@@ -1,3 +1,4 @@
+from typing import Type
 import mysql 
 import mysql.connector
 import sys 
@@ -735,15 +736,18 @@ class MainWindow (QMainWindow):
     
         for i in range(numRows):
             for j in range(numColumn):
-                if j == 8:
-                    penalization = self.overduecheck(rows[i][0], rows[i][1], rows[i][6])
-                    if penalization == False:
-                        pass
-                    else:
-                        penalization_text = f"Penalization: {penalization[1]} per day \nOverdue: {penalization[0]} days\nTotal:{penalization[2]}"
-                        self.cust_table.setItem(i, j, QTableWidgetItem(str(penalization_text)))
-                        continue
-                self.cust_table.setItem(i, j, QTableWidgetItem(str(rows[i][j])))
+                try:
+                    if j == 8:
+                        penalization = self.overduecheck(rows[i][0], rows[i][1], rows[i][6])
+                        if penalization == False:
+                            pass
+                        else:
+                            penalization_text = f"Penalization: {penalization[1]} per day \nOverdue: {penalization[0]} days\nTotal:{penalization[2]}"
+                            self.cust_table.setItem(i, j, QTableWidgetItem(str(penalization_text)))
+                            continue
+                    self.cust_table.setItem(i, j, QTableWidgetItem(str(rows[i][j])))
+                except TypeError:
+                    self.tableWidget.setItem(i, j, QTableWidgetItem("Deleted"))
             actionWidget = self.make_buttons2(i, searchfor)                    #REFER TO makebuttons function for details
             self.cust_table.setCellWidget(i, 9, actionWidget)
 
@@ -774,10 +778,13 @@ class MainWindow (QMainWindow):
         
         for i in range(numRows):
             for j in range(numColumn):
-                if j == 9 and rows[i][9] == None:
-                    self.hist_table.setItem(i, j, QTableWidgetItem(str('To be returned')))
-                    continue
-                self.hist_table.setItem(i, j, QTableWidgetItem(str(rows[i][j])))
+                try:
+                    if j == 9 and rows[i][9] == None:
+                        self.hist_table.setItem(i, j, QTableWidgetItem(str('To be returned')))
+                        continue
+                    self.hist_table.setItem(i, j, QTableWidgetItem(str(rows[i][j])))
+                except TypeError:
+                    self.tableWidget.setItem(i, j, QTableWidgetItem("Deleted"))
 
     def display_books(self, search = False, searchfor = None):          #SEARCH == TRUE - MEANING DISPLAYING FOR A SEARCH, SEARCHFOR = SEARCHED KEYWORD
         hheader = self.book_table.horizontalHeader()          

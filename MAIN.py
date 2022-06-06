@@ -360,6 +360,9 @@ class AddBook(QMainWindow):
             return 0
         
     def searchisbn(self): #Search isbn
+        if not self.book_isbn.text():
+            self.error_dialog.showMessage('You have entered invalid information.')
+            return
         rows = self.search()
         if rows:
             self.autofill(rows)

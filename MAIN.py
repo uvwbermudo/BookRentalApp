@@ -343,6 +343,11 @@ class AddBook(QMainWindow):
                     return
             self.close()
             self.success_dialog.showMessage('Book added successfully!')
+            self.book_title.setReadOnly(False)
+            self.book_author.setReadOnly(False)
+            self.book_genre.setReadOnly(False)
+            self.book_date.setReadOnly(False)
+            self.book_price.setReadOnly(False)
         else:
             return
         
